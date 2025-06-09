@@ -1,132 +1,136 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { FormEvent, useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import { User, Lock, ArrowRight, Loader2 } from 'lucide-react'; // Added Loader2 for loading state
 
-export default function LoginPage() {
-  const [username, setUsername] = useState('');
+import { useRouter } from 'next/navigation';
+import IconTechnomic from '@/components/ui/IconTechnomic';
+import { handleLogin } from '@/features/auth/services/authService';
+
+const LoginPage = () => {
+  const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError('');
     setIsLoading(true);
-    setError(null);
-
     try {
-      const response = await axios.post('http://localhost:8000/login', 
-        { username, password },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
-
-      const data = response.data;
-      console.log(data);
-      // Assuming data.permissions is a string like "superadmin", "admin", or "user"
-      if (data.permissions) {
-        // Set cookie for middleware to pick up
-        // Expires in 1 day, adjust as needed
-        const expires = new Date(Date.now() + 86400e3).toUTCString();
-        document.cookie = `userRole=${data.permissions.toLowerCase()}; path=/; expires=${expires}; SameSite=Lax`;
-        
-        // The middleware will handle redirection from '/' if userRole cookie is set.
-        // So, we can just push to '/' and let middleware do its job.
-        router.push('/'); 
-      } else {
-        throw new Error('Permissions not received from server.');
-      }
-
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const axiosError = err as AxiosError<{ detail?: string }>;
-        setError(axiosError.response?.data?.detail || axiosError.message || 'Login failed due to a server error.');
-      } else if (err instanceof Error) {
-        setError(err.message || 'An unexpected error occurred.');
-      } else {
-        setError('An unexpected error occurred.');
-      }
+      await handleLogin(username, password, setError, router);
     } finally {
       setIsLoading(false);
     }
   };
 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-slate-800 shadow-2xl rounded-xl p-8 space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-sky-400">Welcome Back</h1>
-          <p className="text-slate-400 mt-2">Sign in to continue to your dashboard.</p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-300 via-indigo-700 to-blue-800 flex items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+      <div className="bg-white/20 backdrop-blur-2xl shadow-2xl rounded-2xl border border-white/30 w-full max-w-4xl flex overflow-hidden min-h-[600px]">
+        {/* Left Panel */} 
+        <div className="w-1/2 bg-black/10 p-10 text-white hidden md:flex flex-col justify-center items-center relative">
+          <div className="mb-8 text-center">
+       <IconTechnomic width={350} height={200} /> 
+   
+          </div>
+          <h2 className="text-3xl font-bold mb-3 text-center">Technomic Systems</h2>
+          <p className="text-center text-indigo-200 text-lg">
+            Technomic Systems  <span className="font-semibold text-indigo-100">IPPBX</span>.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-slate-300 mb-1">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              autoComplete="username"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="appearance-none block w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 placeholder-slate-500 text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"
-              placeholder="Enter your username"
-            />
+        {/* Right Panel */} 
+        <div className="w-full md:w-1/2 p-8 sm:p-10 bg-white/5 flex flex-col justify-center">
+          <div className="flex justify-end mb-6">
+            <button className="px-5 py-2 text-sm font-semibold text-white bg-slate-700 rounded-l-md focus:outline-none z-10 shadow-md transition-colors hover:bg-slate-600">Sign In</button>
+            <button className="px-5 py-2 text-sm font-semibold text-indigo-200 bg-slate-800/80 hover:bg-slate-700/90 rounded-r-md focus:outline-none transition-colors">Sign Up</button>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="appearance-none block w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 placeholder-slate-500 text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-150 ease-in-out"
-              placeholder="Enter your password"
-            />
-          </div>
+          <h1 className="text-3xl font-bold text-white mb-8">Sign In</h1>
 
           {error && (
-            <div className="bg-red-700/30 border border-red-600 text-red-300 px-4 py-3 rounded-lg text-sm">
-              <p>{error}</p>
+            <div className="mb-4 p-3 bg-red-500/30 text-red-100 border border-red-500/50 rounded-md text-sm">
+              {error}
             </div>
           )}
 
-          <div>
+          <form onSubmit={ handleSubmit}>
+            <div className="mb-5">
+              <label htmlFor="username" className="block text-sm font-medium text-indigo-100 mb-1.5">Username</label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-indigo-300 pointer-events-none" size={18} />
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 bg-white/10 text-white rounded-lg border border-transparent focus:border-indigo-400/80 focus:ring-1 focus:ring-indigo-400/80 focus:outline-none placeholder-indigo-300/70 transition-colors duration-300"
+                  placeholder="your.username"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <label htmlFor="password" className="block text-sm font-medium text-indigo-100 mb-1.5">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-indigo-300 pointer-events-none" size={18} />
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 bg-white/10 text-white rounded-lg border border-transparent focus:border-indigo-400/80 focus:ring-1 focus:ring-indigo-400/80 focus:outline-none placeholder-indigo-300/70 transition-colors duration-300"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end mb-8">
+              <a href="#" className="text-sm text-indigo-300 hover:text-indigo-100 hover:underline transition-colors">Forgot Password?</a>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-sky-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full ${
+                isLoading ? 'bg-slate-600' : 'bg-slate-700 hover:bg-slate-600'
+              } text-white font-semibold py-3.5 rounded-lg transition duration-300 ease-in-out flex items-center justify-center shadow-md`}
             >
               {isLoading ? (
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <>
+                  <Loader2 className="animate-spin mr-2" size={20} />
+                  Signing in...
+                </>
               ) : (
-                'Sign In'
+                <>
+                  Sign In <ArrowRight className="ml-2" size={20} />
+                </>
               )}
             </button>
+          </form>
+
+          <div className="mt-8 flex items-center">
+            <hr className="flex-grow border-t border-indigo-400/30" />
+            <span className="px-3 text-indigo-200 text-xs">OR CONTINUE WITH</span>
+            <hr className="flex-grow border-t border-indigo-400/30" />
           </div>
-        </form>
-        
-        <p className="text-center text-sm text-slate-500">
-          Powered by FusionPBX & Next.js
-        </p>
+          
+          {/* <div className="mt-6 flex justify-center space-x-3">
+            {[GoogleIcon, Facebook, Twitter, Github].map((Icon, index) => (
+              <button key={index} className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-indigo-200 hover:text-white transition-all duration-300 aspect-square flex items-center justify-center shadow">
+                <Icon size={18} />
+              </button>
+            ))}
+          </div> */}
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;
