@@ -54,15 +54,40 @@ export function middleware(request: NextRequest) {
   }
 
   // (ภาษาไทย) ถ้าผู้ใช้ที่ Login แล้วพยายามเข้า path ของ role แบบเก่า
-  if (oldRoleSpecificPaths.some(p => pathname.startsWith(p))) {
+  if (oldRoleSpecificPaths.some(oldPath => pathname === oldPath || pathname.startsWith(oldPath + '/'))) {
     console.log(`User ${currentUserRole} trying to access old role path ${pathname}, redirecting to ${dashboardPath}`);
     return NextResponse.redirect(new URL(dashboardPath, request.url));
   }
   
-  // (ภาษาไทย) ถ้าผู้ใช้ที่ Login แล้วกำลังเข้าถึงหน้า Dashboard หรือ sub-path ของ Dashboard
-  if (pathname.startsWith(dashboardPath)) {
-    // (ภาษาไทย) อนุญาตให้เข้าถึง
-    console.log(`User ${currentUserRole} accessing ${pathname}, allowing.`);
+  // (ภาษาไทย) ถ้าผู้ใช้ที่ Login แล้วกำลังเข้าถึง path ที่อนุญาต
+  // (ภาษาไทย) ทำให้ path ทั้งหมดเป็นตัวพิมพ์เล็กเพื่อการเปรียบเทียบที่สอดคล้องกัน
+  const normalizedPathname = pathname.toLowerCase();
+  // (ภาษาไทย) กำหนดรายการ path ที่อนุญาต (เป็นตัวพิมพ์เล็ก และไม่ซ้ำซ้อน)
+  // (ภาษาไทย) dashboardPath ถูกแปลงเป็น lowercase แล้ว
+  const normalizedAllowedBasePaths = [
+    "/dashbord",      // (ภาษาไทย) หน้า Dashboard หลัก (ตัวพิมพ์เล็ก)
+    "/domain",        // (ภาษาไทย) อนุญาต /domain และ subpaths เช่น /domain/manage
+    "/useraccess",    // (ภาษาไทย) อนุญาต /useraccess และ subpaths เช่น /useraccess/roles
+    "/usersettings"   // (ภาษาไทย) อนุญาต /usersettings และ subpaths เช่น /usersettings/profile
+  ];
+
+  // (ภาษาไทย) แสดงค่าตัวแปรเพื่อการดีบัก
+  console.log("Current Path (normalized):", normalizedPathname);
+  console.log("Allowed Base Paths (explicitly defined, normalized):", normalizedAllowedBasePaths);
+
+  // (ภาษาไทย) ตรวจสอบว่า path ปัจจุบันเริ่มต้นด้วยหนึ่งใน path ที่อนุญาตหรือไม่ (พร้อม logging โดยละเอียด)
+  console.log(`Preparing to check if '${normalizedPathname}' starts with any of: ${JSON.stringify(normalizedAllowedBasePaths)}`);
+  const isPathAllowed = normalizedAllowedBasePaths.some(
+    allowedBase => {
+      const check = normalizedPathname.startsWith(allowedBase);
+      console.log(`- Checking if '${normalizedPathname}' starts with '${allowedBase}': ${check}`);
+      return check;
+    }
+  );
+  console.log("Is Path Allowed (after .some check):", isPathAllowed);
+
+  if (isPathAllowed) {
+    console.log(`User ${currentUserRole} accessing ${pathname} (normalized to ${normalizedPathname}), allowing.`);
     return NextResponse.next();
   }
 
