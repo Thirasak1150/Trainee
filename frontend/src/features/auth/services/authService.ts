@@ -1,7 +1,14 @@
 import axios, { AxiosError } from 'axios';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export const handleLogin = async (username: string, password: string,setError: (error: string) => void, router: any) => {
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+
+export const handleLogin = async (
+  username: string,
+  password: string,
+  setError: (error: string) => void,
+  router: AppRouterInstance
+) => {
 
     console.log(username,password);
     try {
@@ -13,21 +20,23 @@ export const handleLogin = async (username: string, password: string,setError: (
               }
             }
           );
-        
           const data = response.data;
+  
       console.log(data);
       // data.permissions is now an array of strings like ["admin"]
       if (data.permissions && data.permissions.length > 0) {
         // Use the first permission as the user role
-        const userRole = data.permissions[0].toLowerCase();
+        const userRole = data.permissions.toLowerCase();
         // Set cookie for middleware to pick up
         // Expires in 1 day, adjust as needed
         const expires = new Date(Date.now() + 86400e3).toUTCString();
         document.cookie = `userRole=${userRole}; path=/; expires=${expires}; SameSite=Lax`;
-        
+        document.cookie = `user_uuid=${data.user_uuid}; path=/; expires=${expires}; SameSite=Lax`;
+        console.log("permissions success")
         // The middleware will handle redirection from '/' if userRole cookie is set.
         // So, we can just push to '/' and let middleware do its job.
-        router.push('/'); 
+        router.push('/Dashbord'); 
+        return data; // Return the response data
       } else {
         setError("Invalid username or password");
       }

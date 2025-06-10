@@ -8,11 +8,6 @@ import {
 } from "@tabler/icons-react"
 import { IconUserCircle } from "@tabler/icons-react";
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -28,6 +23,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
+import { useRouter } from 'next/navigation';
+import { useUser } from "../Usercontext";
 
 export function NavUser({
   user,
@@ -39,7 +36,11 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { logout } = useUser();
 
+  const handleLogout = () => {
+    logout();
+  }
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -92,20 +93,15 @@ export function NavUser({
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification />
-                Notifications
-              </DropdownMenuItem>
+        
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <IconLogout />
-              Log out
-            </DropdownMenuItem>
+            <button onClick={handleLogout}>
+              <DropdownMenuItem>
+                <IconLogout />
+                Log out
+              </DropdownMenuItem>
+            </button>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

@@ -4,9 +4,14 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Allow Chrome DevTools and similar requests to .well-known
+  if (pathname.startsWith('/.well-known')) {
+    return NextResponse.next();
+  }
+
   // (ภาษาไทย) ดึงค่า cookie ที่ชื่อว่า userRole
   const userRoleCookie = request.cookies.get('userRole');
-  let rawUserRole = userRoleCookie?.value;
+  const rawUserRole = userRoleCookie?.value;
   let processedUserRole: string | undefined = undefined;
 
   // (ภาษาไทย) แปลงค่าจาก cookie ให้เป็นรูปแบบที่ใช้ได้ (user, admin, superadmin)
@@ -85,7 +90,10 @@ export function middleware(request: NextRequest) {
     }
   );
   console.log("Is Path Allowed (after .some check):", isPathAllowed);
-
+  if (pathname.startsWith('/Animation/') || pathname.endsWith('.mp4')) {
+    console.log("Amationn true")
+    return NextResponse.next();
+  }
   if (isPathAllowed) {
     console.log(`User ${currentUserRole} accessing ${pathname} (normalized to ${normalizedPathname}), allowing.`);
     return NextResponse.next();
@@ -100,13 +108,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * ใช้กับทุก path ยกเว้น path ที่ขึ้นต้นด้วย:
-     * - api (route สำหรับ API)
-     * - _next/static (ไฟล์ static)
-     * - _next/image (ไฟล์รูปภาพที่ optimize แล้ว)
-     * - favicon.ico (ไอคอนของเว็บ)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public|.*\\.mp4$).*)',
   ],
 };

@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
-// import Navbar from "@/components/Navbar"; // Assuming Navbar is in src/components
- // Import Box and Toolbar for layout adjustments
-import { ActiveThemeProvider } from "@/components/ui/active-theme";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
-import { SiteHeader } from "./components/site-header";
 import { Toaster } from "sonner";
+import { UserProvider } from "./Usercontext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +32,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-black dark:bg-black dark:text-white`}
       >
-        <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+        <UserProvider>
+          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+        </UserProvider>
         <Toaster />
       </body>
     </html>

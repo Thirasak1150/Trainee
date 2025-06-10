@@ -6,11 +6,11 @@ import hashlib
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-def get_all_users():
+async def get_all_users():
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM public.view_users")
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM public.v_users")
         users = cur.fetchall()
         print(users)
         cur.close()
@@ -20,11 +20,11 @@ def get_all_users():
         print(e)
         return {"error": str(e)}
 
-def get_user_by_username(username: str):
+async def get_user_by_username(username: str):
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM public.view_users WHERE username = %s", (username,))
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM public.v_users WHERE username = %s", (username,))
         user = cur.fetchone()
         cur.close()
         conn.close()
@@ -34,47 +34,95 @@ def get_user_by_username(username: str):
     except Exception as e:
         return {"error": str(e)}
 
-# def create_user(user: UserCreate):
-#     try:
-#         conn = get_db_connection()
-#         cur = conn.cursor()
+async def create_user(user_data: dict):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
 
-#         # Generate a new user_uuid
-#         new_user_uuid = str(uuid.uuid4())
+        # Generate a new user_uuid
+        new_user_uuid = str(uuid.uuid4())
 
-#         # Hash the password (using SHA-256 as an example)
-#         hashed_password = hashlib.sha256(user.password.encode('utf-8')).hexdigest()
-
-#         # Insert the new user into the v_users table
-#         # Assuming domain_uuid can be NULL for now, or you might need to fetch/provide it
-#         # Setting user_enabled to 'true' by default
-#         cur.execute(
-#             """INSERT INTO public.v_users 
-#                (user_uuid, username, password, user_enabled, insert_date, add_date) 
-#                VALUES (%s, %s, %s, %s, NOW(), NOW())""",
-#             (new_user_uuid, user.username, hashed_password, 'true')
-#         )
-#         conn.commit()
+        # Insert the new user into the v_users table
+        cur.execute(
+            """INSERT INTO public.v_users 
+               (user_uuid, username, user_enabled, user_email, insert_date) 
+               VALUES (%s, %s, %s, %s, NOW())
+               RETURNING *""",
+            (new_user_uuid, user_data['username'], user_data.get('user_enabled', 'false'), user_data.get('email', ''))
+        )
+        new_user = cur.fetchone()
+        conn.commit()
         
-#         cur.close()
-#         conn.close()
+        cur.close()
+        conn.close()
         
-#         return {"message": f"User '{user.username}' created successfully.", "user_uuid": new_user_uuid}
-#     except psycopg2.Error as e:
-#         # Log the error for debugging
-#         print(f"Database error: {e}")
-#         # You might want to rollback in case of an error if the connection is still open
-#         # if conn:
-#         #     conn.rollback()
-#         raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
-#     except Exception as e:
-#         print(f"An unexpected error occurred: {e}")
-#         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+        return new_user
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+
+async def update_user(user_uuid: str, user_data: dict):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Update the user in the v_users table
+        cur.execute(
+            """UPDATE public.v_users 
+               SET username = %s, user_enabled = %s, user_email = %s, api_key = %s, update_date = NOW()
+               WHERE user_uuid = %s
+               RETURNING *""",
+            (user_data['username'], user_data.get('user_enabled', 'false'), user_data.get('email', ''), user_data.get('api_key', None), user_uuid)
+        )
+        updated_user = cur.fetchone()
+        conn.commit()
+        
+        cur.close()
+        conn.close()
+        
+        if updated_user:
+            return updated_user
+        raise HTTPException(status_code=404, detail="User not found")
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+
+async def delete_user(user_uuid: str):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Delete the user from the v_users table
+        cur.execute("DELETE FROM public.v_users WHERE user_uuid = %s RETURNING user_uuid", (user_uuid,))
+        deleted_user = cur.fetchone()
+        conn.commit()
+        
+        cur.close()
+        conn.close()
+        
+        if deleted_user:
+            return {"message": f"User with UUID {user_uuid} deleted successfully."}
+        raise HTTPException(status_code=404, detail="User not found")
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 async def login_for_access_token(credentials: UserLoginCredentials):
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         print("Credentials:", credentials)
         # Fetch user from database
         cur.execute(
@@ -92,6 +140,7 @@ async def login_for_access_token(credentials: UserLoginCredentials):
             
             return LoginResponse(
                 message="User not found", 
+                user_uuid="",
                 user="", 
                 permissions=[]
             )
@@ -109,7 +158,12 @@ async def login_for_access_token(credentials: UserLoginCredentials):
             
             cur.close()
             conn.close()
-            raise HTTPException(status_code=401, detail="Invalid username or password")
+            return LoginResponse(
+                message="User not found", 
+                user_uuid="",
+                user="", 
+                permissions=[]
+            )
         print("User record user_uuid:", user_record['user_uuid'])
         cur.execute(
             "SELECT group_name FROM public.v_user_groups WHERE user_uuid = %s", 
@@ -119,14 +173,15 @@ async def login_for_access_token(credentials: UserLoginCredentials):
         print("group_names:", group_names)
         # Extract group names from the result, handling empty or None cases
         permissions_list = [group['group_name'] for group in group_names if group and 'group_name' in group] if group_names else []
-
+      
         cur.close()
         conn.close()
 
         return LoginResponse(
             message="Login successful", 
+            user_uuid=user_record['user_uuid'],
             user=user_record['username'], 
-            permissions=permissions_list
+            permissions=permissions_list[0]
         )
 
     except psycopg2.Error as e:

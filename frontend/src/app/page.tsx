@@ -1,12 +1,13 @@
 "use client";
 
 import React, { FormEvent, useState } from 'react';
-import axios, { AxiosError } from 'axios';
+
 import { User, Lock, ArrowRight, Loader2 } from 'lucide-react'; // Added Loader2 for loading state
 
 import { useRouter } from 'next/navigation';
-import IconTechnomic from '@/components/ui/IconTechnomic';
+// import IconTechnomic from '@/components/ui/IconTechnomic';
 import { handleLogin } from '@/features/auth/services/authService';
+import { useUser } from './Usercontext';
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>('');
@@ -14,14 +15,20 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { setUser_uuid } = useUser();
   
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
     setIsLoading(true);
     try {
-      await handleLogin(username, password, setError, router);
+      
+    const response = await handleLogin(username, password, setError, router);
+    console.log(response.user_uuid);
+    setUser_uuid(response.user_uuid);
+
     } finally {
+ 
       setIsLoading(false);
     }
   };
@@ -33,12 +40,12 @@ const LoginPage = () => {
         {/* Left Panel */} 
         <div className="w-1/2 bg-black/10 p-10 text-white hidden md:flex flex-col justify-center items-center relative">
           <div className="mb-8 text-center">
-       <IconTechnomic width={350} height={200} /> 
-   
-          </div>
+       {/* <IconTechnomic width={350} height={200} /> 
+    */}<video src="/Animation/logovedio.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover"></video>
+        </div>
           <h2 className="text-3xl font-bold mb-3 text-center">Technomic Systems</h2>
           <p className="text-center text-indigo-200 text-lg">
-            Technomic Systems  <span className="font-semibold text-indigo-100">IPPBX</span>.
+            Technomic Systems  <span className="font-semibold text-indigo-100">PBX</span>.
           </p>
         </div>
 

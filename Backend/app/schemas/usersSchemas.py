@@ -5,7 +5,8 @@ from datetime import datetime
 class LoginResponse(BaseModel):
     message: str
     user: str
-    permissions: List[str]
+    user_uuid:str
+    permissions: str
 
 class UserLoginCredentials(BaseModel):
     username: str
