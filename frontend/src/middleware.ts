@@ -18,11 +18,11 @@ export function middleware(request: NextRequest) {
   // (ภาษาไทย) ไม่ต้องแปลงเป็นตัวพิมพ์ใหญ่ตัวแรกแล้ว เพราะ Navbar และ DashboardPage ใช้ตัวพิมพ์เล็ก
   if (rawUserRole) {
     const roleLower = rawUserRole.toLowerCase();
-    if (['user', 'admin', 'superadmin'].includes(roleLower)) {
+    if (['user', 'admin', 'superadmin', 'advance'].includes(roleLower)) {
       processedUserRole = roleLower;
     }
   }
-
+  console.log("processedUserRole", processedUserRole);
   const currentUserRole = processedUserRole;
   const loginPath = '/'; // (ภาษาไทย) หน้าหลักคือหน้า login
   const dashboardPath = '/Dashbord'; // (ภาษาไทย) หน้า Dashboard ใหม่สำหรับทุก role
@@ -73,7 +73,9 @@ export function middleware(request: NextRequest) {
     "/dashbord",      // (ภาษาไทย) หน้า Dashboard หลัก (ตัวพิมพ์เล็ก)
     "/domain",        // (ภาษาไทย) อนุญาต /domain และ subpaths เช่น /domain/manage
     "/useraccess",    // (ภาษาไทย) อนุญาต /useraccess และ subpaths เช่น /useraccess/roles
-    "/usersettings"   // (ภาษาไทย) อนุญาต /usersettings และ subpaths เช่น /usersettings/profile
+    "/usersettings" ,
+    "/advance",
+    "/Advance/Menu_Manager"
   ];
 
   // (ภาษาไทย) แสดงค่าตัวแปรเพื่อการดีบัก

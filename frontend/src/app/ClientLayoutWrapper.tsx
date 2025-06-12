@@ -3,7 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { usePathname } from "next/navigation";
 import { ActiveThemeProvider } from "@/components/ui/active-theme";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
+import { AppSidebar } from "@/app/components/app-sidebar";
 import { SiteHeader } from "./components/site-header";
 import React from "react";
 

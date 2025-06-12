@@ -1,10 +1,8 @@
 "use client"
 
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
 } from "@tabler/icons-react"
 import { IconUserCircle } from "@tabler/icons-react";
 import {
@@ -23,7 +21,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
-import { useRouter } from 'next/navigation';
 import { useUser } from "../Usercontext";
 
 export function NavUser({
@@ -41,6 +38,7 @@ export function NavUser({
   const handleLogout = () => {
     logout();
   }
+ 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -93,15 +91,15 @@ export function NavUser({
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-        
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <button onClick={handleLogout}>
+              <button className="w-full" onClick={handleLogout}>
               <DropdownMenuItem>
                 <IconLogout />
                 Log out
               </DropdownMenuItem>
             </button>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+   
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

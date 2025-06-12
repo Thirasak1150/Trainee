@@ -1,14 +1,21 @@
-from psycopg2.extras import RealDictCursor
-import psycopg2
+from prisma import Prisma
+from contextlib import asynccontextmanager
 
+# สร้าง Prisma client instance ที่สามารถ import ได้โดยตรง
+prisma = Prisma()
 
-def get_db_connection():
-    SQLALCHEMY_DATABASE_URL = "postgresql://postgres:Plankton273855@localhost:5432/fusionpbx"
+# สร้าง async context manager สำหรับการเชื่อมต่อกับฐานข้อมูล
+@asynccontextmanager
+async def get_prisma():
+    try:
+        await prisma.connect()
+        yield prisma
+    finally:
+        await prisma.disconnect()
 
-    return psycopg2.connect(
-        host="host.docker.internal",  # เปลี่ยนเป็น host.docker.internal
-        database="fusionpbx",
-        user="postgres",
-        password="Plankton273855",
-        cursor_factory=RealDictCursor
-    )
+# ฟังก์ชันสำหรับการเชื่อมต่อกับฐานข้อมูลในการใช้งานแบบ dependency
+async def get_db():
+    # The connection is now managed by startup/shutdown events in main.py
+    # This generator simply yields the already connected instance.
+    yield prisma
+

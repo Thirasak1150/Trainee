@@ -1,168 +1,131 @@
 "use client"
 
 import * as React from "react"
+import { useEffect } from "react"
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
   IconFileAi,
-  IconFileDescription,
-  IconFileWord,
   IconFolder,
-  IconHelp,
+  IconHome,
   IconListDetails,
   IconReport,
-  IconSearch,
   IconSettings,
+  IconUserCircle,
   IconUsers,
-} from "@tabler/icons-react"
+  type IconProps,
+  type Icon as TablerIcon
+} from "@tabler/icons-react";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { NavUser } from "./nav-user";
+import { useUser } from "../Usercontext";
+import IconTechnomic from "@/components/ui/IconTechnomic";
+import axios from "axios";
+import { NavCustom } from "./nav-custom";
+import { Loader2 } from "lucide-react";
+import { getCookie } from "./get-cookie";
+
+type MenuItem = {
+  name: string;
+  url: string;
+  icon: React.ComponentType<IconProps>;
+};
+
+type MenuHeader = {
+  headerName: string;
+  items: MenuItem[];
+  order_index: number;
+  menu_headers_id: number;
+};
 
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { NavMain } from "./nav-main"
-import { NavDocuments } from "./nav-documents"
-import { NavSecondary } from "./nav-secondary"
-import { NavUser } from "./nav-user"
-import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 
-const data = {
-  user: {
-    name: "Technomic",
-    email: "Technomic@example.com",
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const { Fullname, Useremail, user_uuid } = useUser();
+  const [mounted, setMounted] = React.useState(false);
+  const [menuHeaders, setMenuHeaders] = React.useState<MenuHeader[]>([]);
+  const [user_id, setUser_id] = React.useState(user_uuid || getCookie("user_uuid") || "");
+  React.useEffect(() => setMounted(true), []);
+
+  const profileData = {
+    name: Fullname || getCookie("full_name") || "",
+    email: Useremail || getCookie("email") || "",
     avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/Dashbord",
-      icon: IconDashboard,
-    },
-    {
-      title: "Domain",
-      url: "/Domain",
-      icon: IconListDetails,
-    },
-    {
-      title: "User Access",
-      url: "/UserAccess",
-      icon: IconChartBar,
-    },
-    {
-      title: "User Settings",
-      url: "/UserSettings",
-      icon: IconFolder,
-    },
-    {
-      title: "menu 4",
-      url: "/Dashbord/team",
-      icon: IconUsers,
-    },
-    {
-      title: "menu 5",
-      url: "/Dashbord/analytics",
-      icon: IconChartBar,
-    },
-    {
-      title: "menu 6",
-      url: "/Dashbord/projects",
-      icon: IconFolder,
-    },
+  };
 
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
-}
+  // Map icon names to Tabler icons
+  const getIconComponent = (iconName: string): TablerIcon => {
+    const iconMap: Record<string, TablerIcon> = {
+      dashboard: IconDashboard,
+      users: IconUsers,
+      settings: IconSettings,
+      home: IconHome,
+      folder: IconFolder,
+      report: IconReport,
+      listdetails: IconListDetails,
+      fileai: IconFileAi,
+      account: IconUserCircle,
+      // เพิ่มไอคอนที่จำเป็นตาม backend
+    };
+    return iconMap[iconName.toLowerCase()] || IconFolder;
+  };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const fetchMenus = React.useCallback(async (user_uuid: string) => {
+    console.log("user_uuid", user_id);
+    try {
+      const response = await axios.get(`http://localhost:8000/api/menu/${user_id}`);
+      console.log("response", response.data.length);
+      if (response.data.length == 0 || response.data.length == undefined) {
+        console.log("No data returned");
+        setUser_id(user_uuid);
+        return;
+      }
+      // แปลงข้อมูลให้เป็น array ของ header ที่มีเมนูย่อยในรูปแบบที่ NavMain, NavDocuments, NavSecondary คาดหวัง
+      const headers: MenuHeader[] = response.data.map((header: unknown) => {
+        const h = header as Record<string, unknown>;
+        return {
+          headerName: (h.name_custom as string) || (h.name_default as string) || "No Name",
+          headerIcon: getIconComponent((h.icon as string) || "folder"),
+          items: ((h.menu_items as unknown[]) || []).map((item) => {
+            const i = item as Record<string, unknown>;
+            return {
+              name: (i.name_custom as string) || (i.name_default as string) || "Unnamed",
+              url: (i.path as string) || "#",
+              icon: getIconComponent((i.icon as string) || "folder"),
+            };
+          }),
+          order_index: h.order_index as number,
+          menu_headers_id: h.menu_headers_id as number,
+        };
+      });
+
+      setMenuHeaders(headers);
+      console.log("Menus loaded:", headers);
+    } catch (error) {
+      console.error("Error fetching menus:", error);
+    }
+  }, [user_id, getIconComponent]);
+  // โหลดทุก  1 วิ 5 ครั้ง
+  useEffect(() => {
+    if (menuHeaders.length > 0) return;
+    console.log("user_uuid", user_uuid);
+    const uuid = user_uuid || getCookie("user_uuid");
+    if (uuid) {
+      setUser_id(uuid);
+      fetchMenus(uuid);
+    }
+    const interval = setInterval(() => {
+      console.log("user_uuid", user_uuid);
+      const uuid = user_uuid || getCookie("user_uuid");
+      if (uuid) {
+        setUser_id(uuid);
+        fetchMenus(uuid);
+      }
+    }, 1000 * 5);
+    return () => clearInterval(interval);
+  }, [fetchMenus, menuHeaders.length, user_uuid]);
+  
+  if (!mounted) return null; // รอให้ client mount ก่อน render
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -172,29 +135,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <div className=" flex ">
-              <DotLottieReact
-                  
-                    src="https://lottie.host/d6718db1-2790-44d8-8655-a56f0871c3af/p5GIsycg0R.lottie"
-                    className="w-8 h-8"
-                    loop
-                    autoplay
-                  />
-                    <span className="text-base font-semibold">Technomic</span>
-              </div>
-         
+              <a href="/">
+                <IconTechnomic width={40} height={40} />
+                <span className="text-base font-semibold">Tecnomic</span>
+              </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        {/* แสดงชื่อผู้ใช้ใต้โลโก้ */}
+        {/* <div className="p-4 text-center">
+          <div className="font-medium">{profileData.name}</div>
+          <div className="text-xs text-muted-foreground">{profileData.email}</div>
+        </div> */}
       </SidebarHeader>
+          {menuHeaders.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="animate-spin" />
+            </div>
+          ) : (
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {menuHeaders
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((header) => (
+            <NavCustom 
+              key={header.menu_headers_id}
+              name={header.headerName || "Unnamed Header"}
+             
+              items={header.items}
+            />
+          ))}
       </SidebarContent>
+      )}
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={profileData} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

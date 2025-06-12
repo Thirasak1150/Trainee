@@ -24,30 +24,38 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import * as React from "react";
+import Link from "next/link";
 
-
-interface MenuItem {
-  name: string
-  url: string
-  icon: React.ComponentType<IconProps>
-}
-
-export function NavDocuments({ items }: { items: MenuItem[] }) {
+export function NavCustom({
+  name,
+  items,
+}: {
+  items: {
+    name: string
+    url: string
+    icon: React.ComponentType<IconProps>
+  }[]
+  name: string,
+}) {
   const { isMobile } = useSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Menu</SidebarGroupLabel>
+      <SidebarGroupLabel>
+       
+        <span className="align-middle">{name}</span>
+      </SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url} className="flex items-center gap-2">
-                <item.icon className="h-4 w-4" />
+              <Link href={item.url}>
+                <item.icon />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction
                   showOnHover
@@ -76,7 +84,7 @@ export function NavDocuments({ items }: { items: MenuItem[] }) {
                   <span>Delete</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </SidebarMenuItem>
         ))}
    

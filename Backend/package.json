@@ -1,7 +1,7 @@
 {
-    "name": "trainee-backend",
+    "name": "condoconnect-backend",
     "version": "1.0.0",
-    "description": "Backend API for Trainee",
+    "description": "Backend API for CondoConnect",
     "scripts": {
       "prisma:generate": "prisma generate",
       "prisma:migrate": "prisma migrate dev",

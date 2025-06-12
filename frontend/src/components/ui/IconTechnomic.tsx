@@ -11,7 +11,7 @@ const IconTechnomic = ({
   return (
     <div>
 <DotLottieReact
-       src="https://lottie.host/2a49c031-6ce1-42fb-ac8c-d174b6ceb62b/epJiXq5CCr.lottie"
+       src="https://lottie.host/688d5d2b-bd82-48ba-af9c-0cdf1979e947/KLqUvs9Y8v.lottie"
     loop
     autoplay
     style={{ width: width ? width : 20, height: height ? height : 20, margin: 'auto' }}

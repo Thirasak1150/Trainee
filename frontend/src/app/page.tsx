@@ -7,7 +7,6 @@ import { User, Lock, ArrowRight, Loader2 } from 'lucide-react'; // Added Loader2
 import { useRouter } from 'next/navigation';
 // import IconTechnomic from '@/components/ui/IconTechnomic';
 import { handleLogin } from '@/features/auth/services/authService';
-import { useUser } from './Usercontext';
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>('');
@@ -15,7 +14,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { setUser_uuid } = useUser();
+
   
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,13 +22,12 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       
-    const response = await handleLogin(username, password, setError, router);
-    console.log(response.user_uuid);
-    setUser_uuid(response.user_uuid);
+    // The handleLogin service now manages setting cookies and redirection.
+    await handleLogin(username, password, setError, router);
 
     } finally {
  
-      setIsLoading(false);
+   
     }
   };
 
@@ -43,9 +41,9 @@ const LoginPage = () => {
        {/* <IconTechnomic width={350} height={200} /> 
     */}<video src="/Animation/logovedio.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover"></video>
         </div>
-          <h2 className="text-3xl font-bold mb-3 text-center">Technomic Systems</h2>
+          <h2 className="text-3xl font-semibold mb-3 text-center">Tecnomic System</h2>
           <p className="text-center text-indigo-200 text-lg">
-            Technomic Systems  <span className="font-semibold text-indigo-100">PBX</span>.
+            Tecnomic System  <span className="font-semibold text-indigo-100">PBX</span>.
           </p>
         </div>
 

@@ -1,0 +1,97 @@
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model roles {
+  roles_id    String          @id @default(uuid()) @db.Uuid
+  name        String          @unique
+  description String?
+
+  users       users[]
+  role_menus  role_menus[]
+  role_menu_items role_menu_items[]
+}
+
+model users {
+  users_id     String    @id @default(uuid()) @db.Uuid
+  username     String    @unique
+  password_hash String
+  full_name    String?
+  email        String?
+  roles_id     String    @db.Uuid
+  created_at   DateTime  @default(now())
+  
+  roles        roles     @relation(fields: [roles_id], references: [roles_id])
+  domains_created domains[] @relation("domainsCreated")
+  domains_updated domains[] @relation("domainsUpdated")
+}
+
+model domains {
+  domains_id   String   @id @default(uuid()) @db.Uuid
+  domain_name  String   @unique
+  enable      Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  created_by  String?   @db.Uuid
+  updated_at  DateTime  @default(now())
+  updated_by  String?   @db.Uuid
+
+  creator     users?   @relation("domainsCreated", fields: [created_by], references: [users_id], onDelete: SetNull)
+  updater     users?   @relation("domainsUpdated", fields: [updated_by], references: [users_id], onDelete: SetNull)
+}
+
+model menu_headers {
+  menu_headers_id String        @id @default(uuid()) @db.Uuid
+  name_default    String
+  name_custom     String?
+  icon            String?
+  order_index     Int           @default(0)
+  is_active       Boolean       @default(true)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @default(now())
+
+  menu_items     menu_items[]
+  role_menus     role_menus[]
+}
+
+model menu_items {
+  menu_items_id  String      @id @default(uuid()) @db.Uuid
+  menu_headers_id String     @db.Uuid
+  name_default   String
+  name_custom    String?
+  path           String?
+  icon           String?
+  order_index    Int         @default(0)
+  is_active      Boolean     @default(true)
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @default(now())
+
+  menu_header    menu_headers @relation(fields: [menu_headers_id], references: [menu_headers_id], onDelete: Cascade)
+  role_menu_items role_menu_items[]
+}
+
+model role_menus {
+  roles_id       String      @db.Uuid
+  menu_headers_id String     @db.Uuid
+
+  roles         roles       @relation(fields: [roles_id], references: [roles_id], onDelete: Cascade)
+  menu_header   menu_headers @relation(fields: [menu_headers_id], references: [menu_headers_id], onDelete: Cascade)
+
+  @@id([roles_id, menu_headers_id])
+}
+
+model role_menu_items {
+  roles_id      String      @db.Uuid
+  menu_items_id String      @db.Uuid
+
+  roles        roles       @relation(fields: [roles_id], references: [roles_id], onDelete: Cascade)
+  menu_item    menu_items  @relation(fields: [menu_items_id], references: [menu_items_id], onDelete: Cascade)
+
+  @@id([roles_id, menu_items_id])
+}

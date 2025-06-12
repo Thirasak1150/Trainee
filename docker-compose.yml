@@ -1,4 +1,19 @@
 services:
+  postgres:
+    image: postgres:15
+    container_name: Trainee-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: StrongP@ssw0rd123!
+      POSTGRES_DB: TecnimicPBX
+      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - trainee-network
+    restart: unless-stopped
 
   backend:
     build:
@@ -6,6 +21,7 @@ services:
       dockerfile: Dockerfile
     container_name: Trainee-backend
     environment:
+      - DATABASE_URL=postgresql://postgres:StrongP@ssw0rd123!@postgres:5432/TecnimicPBX
       - JWT_SECRET=your_secret_key_here
       - JWT_ALGORITHM=HS256
       - JWT_EXPIRATION=60
@@ -14,10 +30,31 @@ services:
     volumes:
       - ./Backend:/app
     networks:
-      - trainee_condoconnect-network
+      - trainee-network
     restart: unless-stopped
-    # command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: Trainee-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - WATCHPACK_POLLING=true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - trainee-network
+    restart: unless-stopped
 
 networks:
-  trainee_condoconnect-network:
+  trainee-network:
     driver: bridge
+
+volumes:
+  postgres_data:

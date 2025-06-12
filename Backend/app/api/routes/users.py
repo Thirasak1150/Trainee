@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from app.services.users_service import get_all_users, get_user_by_username, create_user, update_user, delete_user, login_for_access_token
+from app.services.users_service import get_all_users, get_user_by_login, create_user, update_user, delete_user, login_for_access_token
 from app.schemas.usersSchemas import UserLoginCredentials, LoginResponse
 from typing import Dict
 
@@ -10,14 +10,14 @@ async def read_users(skip: int = 0, limit: int = 100):
     """
     ดึงข้อมูลผู้ใช้ทั้งหมด
     """
-    users = await get_all_users()
+    users = await get_all_users(skip=skip, limit=limit)
     return users
 
 
 # Endpoint สำหรับดึงข้อมูลผู้ใช้ตาม username
-@router.get("/{username}")
-async def Get_user_by_username(username: str):
-    return await get_user_by_username(username)
+@router.post("/login")
+async def Get_user_by_login(credentials: UserLoginCredentials):
+    return await get_user_by_login(credentials.username, credentials.password)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -45,7 +45,3 @@ async def delete_existing_user(user_uuid: str):
     return await delete_user(user_uuid)
 
 
-@router.post("/login", response_model=LoginResponse)
-async def Login_for_access_token(credentials: UserLoginCredentials):
-    print("ddddddddddddddddddd")
-    return await login_for_access_token(credentials)

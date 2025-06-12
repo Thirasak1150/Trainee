@@ -1,129 +1,122 @@
-from app.db.db import get_db_connection
+from app.db.db import get_db
 from app.schemas.usersSchemas import LoginResponse, UserLoginCredentials, User
 from fastapi import HTTPException
 import uuid
 import hashlib
-import psycopg2
-from psycopg2.extras import RealDictCursor
+# import psycopg2
+# from psycopg2.extras import RealDictCursor
+# Prisma will be used for DB access
 
-async def get_all_users():
+async def get_all_users(skip: int = 0, limit: int = 100):
+    print(f"all users with skip: {skip}, limit: {limit}")
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM public.v_users")
-        users = cur.fetchall()
-        print(users)
-        cur.close()
-        conn.close()
-        return users
+        async for db in get_db():
+            # Note: Prisma uses 'take' for the limit
+            users = await db.users.find_many(
+                skip=skip,
+                take=limit
+            )
+            print("users", users)
+            return users
+        # TODO: Remove psycopg2 code after full Prisma migration
     except Exception as e:
         print(e)
         return {"error": str(e)}
 
-async def get_user_by_username(username: str):
+async def get_user_by_login(username: str,password: str):
+    print("user login", username, password)
+#     model roles {
+#   roles_id    String          @id @default(uuid()) @db.Uuid
+#   name        String          @unique
+#   description String?
+
+#   users       users[]
+#   role_menus  role_menus[]
+#   role_menu_items role_menu_items[]
+# }
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM public.v_users WHERE username = %s", (username,))
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-        if user:
-            return user
-        return {"error": "User not found"}
+        async for db in get_db():
+            user = await db.users.find_first(
+                where={"username": username},
+                include={"roles": True}  # << รวมตาราง roles ที่สัมพันธ์
+            )
+            if not user:
+                return {"error": "User not found"}
+            if user.password_hash != password:
+                return {"error": "Incorrect password"}
+
+            print("user loginSucces", user) 
+            return {"message": "Login successful",
+            "user_id": user.users_id,
+            "username": user.username,
+            "permissions": user.roles.name,
+            "full_name": user.full_name,
+            "email": user.email,
+            }
+        # TODO: Remove psycopg2 code after full Prisma migration
     except Exception as e:
         return {"error": str(e)}
 
 async def create_user(user_data: dict):
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-
-        # Generate a new user_uuid
-        new_user_uuid = str(uuid.uuid4())
-
-        # Insert the new user into the v_users table
-        cur.execute(
-            """INSERT INTO public.v_users 
-               (user_uuid, username, user_enabled, user_email, insert_date) 
-               VALUES (%s, %s, %s, %s, NOW())
-               RETURNING *""",
-            (new_user_uuid, user_data['username'], user_data.get('user_enabled', 'false'), user_data.get('email', ''))
-        )
-        new_user = cur.fetchone()
-        conn.commit()
-        
-        cur.close()
-        conn.close()
-        
-        return new_user
-    except psycopg2.Error as e:
-        print(f"Database error: {e}")
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
+        async for db in get_db():
+            user = await db.users.update(
+                where={"users_id": users_id},
+                data={
+                    "username": user_data["username"],
+                    "password_hash": user_data["password_hash"],
+                    "full_name": user_data.get("full_name"),
+                    "email": user_data.get("email"),
+                    "roles_id": user_data["roles_id"],
+                }
+            )
+            return user
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
-async def update_user(user_uuid: str, user_data: dict):
+async def update_user(users_id: str, user_data: dict):
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-
-        # Update the user in the v_users table
-        cur.execute(
-            """UPDATE public.v_users 
-               SET username = %s, user_enabled = %s, user_email = %s, api_key = %s, update_date = NOW()
-               WHERE user_uuid = %s
-               RETURNING *""",
-            (user_data['username'], user_data.get('user_enabled', 'false'), user_data.get('email', ''), user_data.get('api_key', None), user_uuid)
-        )
-        updated_user = cur.fetchone()
-        conn.commit()
-        
-        cur.close()
-        conn.close()
-        
-        if updated_user:
-            return updated_user
-        raise HTTPException(status_code=404, detail="User not found")
-    except psycopg2.Error as e:
-        print(f"Database error: {e}")
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
+        async for db in get_db():
+            user = await db.users.update(
+                where={"users_id": users_id},
+                data={
+                    "username": user_data["username"],
+                    "password_hash": user_data["password_hash"],
+                    "full_name": user_data.get("full_name"),
+                    "email": user_data.get("email"),
+                    "roles_id": user_data["roles_id"],
+                }
+            )
+            return user
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
-async def delete_user(user_uuid: str):
+async def delete_user(users_id: str):
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-
-        # Delete the user from the v_users table
-        cur.execute("DELETE FROM public.v_users WHERE user_uuid = %s RETURNING user_uuid", (user_uuid,))
-        deleted_user = cur.fetchone()
-        conn.commit()
-        
-        cur.close()
-        conn.close()
-        
-        if deleted_user:
-            return {"message": f"User with UUID {user_uuid} deleted successfully."}
-        raise HTTPException(status_code=404, detail="User not found")
-    except psycopg2.Error as e:
-        print(f"Database error: {e}")
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Database error: {e.pgcode} - {e.diag.message_primary}")
+        async for db in get_db():
+            user = await db.users.delete(where={"users_id": users_id})
+            return {"message": f"User with ID {users_id} deleted successfully."}
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+        raise HTTPException(status_code=404, detail="User not found")
 
 async def login_for_access_token(credentials: UserLoginCredentials):
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        print("Credentials:", credentials)
+        async for db in get_db():
+            user = await db.users.find_first(where={"username": credentials.username})
+            if not user:
+                raise HTTPException(status_code=401, detail="Incorrect username or password")
+            # สมมติว่า password_hash เป็น hash ที่ client ส่งมาแล้ว (หรือจะ hash ที่ backend ก็ได้)
+            hashed_password = hashlib.sha256(credentials.password.encode()).hexdigest()
+            if user.password_hash != hashed_password:
+                raise HTTPException(status_code=401, detail="Incorrect username or password")
+            # Return user info (customize as needed)
+            return user
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
         # Fetch user from database
         cur.execute(
             "SELECT user_uuid, username, password, salt, user_enabled FROM public.v_users WHERE username = %s", 

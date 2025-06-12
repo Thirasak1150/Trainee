@@ -9,45 +9,41 @@ export const handleLogin = async (
   setError: (error: string) => void,
   router: AppRouterInstance
 ) => {
-
-    console.log(username,password);
     try {
         const response = await axios.post(`${API_URL}/api/users/login`, 
-            { username, password },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            }
+            { username, password }
           );
+
           const data = response.data;
-  
-      console.log(data);
-      // data.permissions is now an array of strings like ["admin"]
-      if (data.permissions && data.permissions.length > 0) {
-        // Use the first permission as the user role
-        const userRole = data.permissions.toLowerCase();
-        // Set cookie for middleware to pick up
+          console.log("data", data);
+          if (data == 'User not found') {   
+            console.log("No data returned");
+            setError('Login failed: No access token returned.');
+            return;
+          }
+          else {
+            
+        const userRole = data.permissions || undefined;
         // Expires in 1 day, adjust as needed
         const expires = new Date(Date.now() + 86400e3).toUTCString();
-        document.cookie = `userRole=${userRole}; path=/; expires=${expires}; SameSite=Lax`;
-        document.cookie = `user_uuid=${data.user_uuid}; path=/; expires=${expires}; SameSite=Lax`;
-        console.log("permissions success")
-        // The middleware will handle redirection from '/' if userRole cookie is set.
-        // So, we can just push to '/' and let middleware do its job.
-        router.push('/Dashbord'); 
-        return data; // Return the response data
-      } else {
-        setError("Invalid username or password");
-      }
+        const path = "/";
+        const sameSite = "SameSite=Lax";
+
+        document.cookie = `userRole=${userRole}; path=${path}; expires=${expires}; ${sameSite}`;
+        document.cookie = `user_uuid=${data.user_id}; path=${path}; expires=${expires}; ${sameSite}`;
+        document.cookie = `full_name=${encodeURIComponent(data.full_name)}; path=${path}; expires=${expires}; ${sameSite}`;
+        document.cookie = `email=${data.email}; path=${path}; expires=${expires}; ${sameSite}`;
+
+        // Redirect to the dashboard, the context will update on the new page
+        router.push('/dashboard'); 
+          }
     } catch (error) {
-        if (axios.isAxiosError(error)) {
-            const axiosError = error as AxiosError<{ detail?: string }>;
-            setError(axiosError.response?.data?.detail || axiosError.message || 'Login failed due to a server error.');
-        } else if (error instanceof Error) {
-            setError(error.message || 'An unexpected error occurred.');
+        const axiosError = error as AxiosError<{ detail?: string }>;
+        setError('An unexpected error occurred. Please try again.');
+        if (axiosError.response && axiosError.response.data && axiosError.response.data.detail) {
+            setError(axiosError.response.data.detail);
         } else {
-            setError('Please check your username and password.');
+            setError('An unexpected error occurred. Please try again.');
         }
     }
 };
