@@ -1,28 +1,12 @@
 "use client"
 
-import {
-  IconDots,
-  IconFolder,
-  IconShare3,
-  IconTrash,
-  type IconProps
-} from "@tabler/icons-react"
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { type IconProps } from "@tabler/icons-react";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import * as React from "react";
 import Link from "next/link";
@@ -38,7 +22,7 @@ export function NavCustom({
   }[]
   name: string,
 }) {
-  const { isMobile } = useSidebar()
+
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">

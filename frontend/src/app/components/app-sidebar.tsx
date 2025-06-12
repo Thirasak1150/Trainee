@@ -10,7 +10,6 @@ import {
   IconListDetails,
   IconReport,
   IconSettings,
-  IconUserCircle,
   IconUsers,
   type IconProps,
   type Icon as TablerIcon
@@ -23,6 +22,7 @@ import axios from "axios";
 import { NavCustom } from "./nav-custom";
 import { Loader2 } from "lucide-react";
 import { getCookie } from "./get-cookie";
+import Link from "next/link";
 
 type MenuItem = {
   name: string;
@@ -53,7 +53,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   };
 
   // Map icon names to Tabler icons
-  const getIconComponent = (iconName: string): TablerIcon => {
+  const getIconComponent = React.useCallback((iconName: string): TablerIcon => {
     const iconMap: Record<string, TablerIcon> = {
       dashboard: IconDashboard,
       users: IconUsers,
@@ -63,11 +63,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       report: IconReport,
       listdetails: IconListDetails,
       fileai: IconFileAi,
-      account: IconUserCircle,
       // เพิ่มไอคอนที่จำเป็นตาม backend
     };
     return iconMap[iconName.toLowerCase()] || IconFolder;
-  };
+  }, []);
 
   const fetchMenus = React.useCallback(async (user_uuid: string) => {
     console.log("user_uuid", user_id);
@@ -135,10 +134,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/">
-                <IconTechnomic width={40} height={40} />
+              <Link href="/">
+                <IconTechnomic width={40} height={30} />
                 <span className="text-base font-semibold">Tecnomic</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
