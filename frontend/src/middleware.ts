@@ -70,16 +70,17 @@ export function middleware(request: NextRequest) {
   // (ภาษาไทย) กำหนดรายการ path ที่อนุญาต (เป็นตัวพิมพ์เล็ก และไม่ซ้ำซ้อน)
   // (ภาษาไทย) dashboardPath ถูกแปลงเป็น lowercase แล้ว
   const normalizedAllowedBasePaths = [
-    "/dashbord",      // (ภาษาไทย) หน้า Dashboard หลัก (ตัวพิมพ์เล็ก)
-    "/domain",        // (ภาษาไทย) อนุญาต /domain และ subpaths เช่น /domain/manage
-    "/useraccess",    // (ภาษาไทย) อนุญาต /useraccess และ subpaths เช่น /useraccess/roles
-    "/usersettings" ,
-    // "Advance"
+    "/dashbord",
+    "/domain",
+    "/useraccess",
+    "/usersettings",
     "/advance",
-    "/Advance/Menu_Manager",
-    // Home
-    "/Home/Account_Setting",
+    "/advance/access-controls",
+    "/advance/domains",
 
+
+    "/home/account-setting",
+    "/home/accounts",
   ];
 
   // (ภาษาไทย) แสดงค่าตัวแปรเพื่อการดีบัก

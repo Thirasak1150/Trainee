@@ -18,16 +18,16 @@ async def create_new_domain(domain: DomainCreate):
     """
     return await create_domain(domain)
 
-@router.put("/{domain_uuid}", response_model=Domain)
-async def update_existing_domain(domain_uuid: str, domain: DomainUpdate):
+@router.put("/{domains_id}", response_model=Domain)
+async def update_existing_domain(domains_id: str, domain: DomainUpdate):
     """
     อัปเดตข้อมูลโดเมน
     """
-    return await update_domain(domain_uuid, domain)
+    return await update_domain(domains_id, domain)
 
-@router.delete("/{domain_uuid}")
-async def delete_existing_domain(domain_uuid: str):
+@router.delete("/{domains_id}")
+async def delete_existing_domain(domains_id: str):
     """
     ลบโดเมน
     """
-    return await delete_domain(domain_uuid)
+    return await delete_domain(domains_id)

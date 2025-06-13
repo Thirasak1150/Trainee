@@ -1,34 +1,37 @@
-from pydantic import BaseModel, Field, EmailStr, UUID4
-from typing import Optional, List
+from pydantic import BaseModel, Field
+from typing import Optional
 from datetime import datetime
 
 
 
 
 class Domain(BaseModel):
-    domain_uuid: str
-    domain_parent_uuid: Optional[str] = None
+    domains_id: str = Field(..., alias='domains_id')
     domain_name: str
-    domain_enabled: Optional[bool] = None       # เปลี่ยน str → bool
-    domain_description: Optional[str] = None
-    insert_date: Optional[datetime] = None      # เปลี่ยน str → datetime
-    insert_user: Optional[str] = None
-    update_date: Optional[datetime] = None      # เปลี่ยน str → datetime
-    update_user: Optional[str] = None
+    enable: bool
+    created_at: datetime
+    created_by: Optional[str] = None
+    updated_at: datetime
+    updated_by: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+        populate_by_name = True
 
 class DomainCreate(BaseModel):
     domain_name: str
-    domain_enabled: bool = False
-    domain_description: Optional[str] = None
-
+    enable: bool = True
+    created_by: Optional[str] = None
+    updated_by: Optional[str] = None
+    
     class Config:
         orm_mode = True
 
 class DomainUpdate(BaseModel):
     domain_name: str
-    domain_enabled: bool
-    domain_description: Optional[str] = None
-
+    enable: bool
+    updated_by: Optional[str] = None
+    created_by: Optional[str] = None
     class Config:
         orm_mode = True
 

@@ -9,6 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { PenBox, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useUser } from "../Usercontext";
 
 interface Domain {
   domain_uuid: string;
@@ -27,7 +40,8 @@ export default function DomainPage() {
   const [allDomains, setAllDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newDomain, setNewDomain] = useState({ domain_name: "", domain_enabled: false, domain_description: "" });
+  const {user_uuid} = useUser()
+  const [newDomain, setNewDomain] = useState({ domain_name: "", domain_enabled: false, domain_description: "" ,created_by:user_uuid});
   const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,10 +81,12 @@ export default function DomainPage() {
 
   const handleAddDomain = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("newDomain",newDomain)
     try {
+ 
       const response = await axios.post("http://localhost:8000/api/domain", newDomain);
       setDomains([...domains, response.data]);
-      setNewDomain({ domain_name: "", domain_enabled: false, domain_description: "" });
+      setNewDomain({ domain_name: "", domain_enabled: false, domain_description: "" ,created_by:user_uuid});
       setOpenDialog(false);
       toast.success("Domain added successfully");
     } catch (err) {
@@ -237,12 +253,30 @@ export default function DomainPage() {
                       <TableCell className="sm:table-cell flex items-center gap-2"><span className="sm:hidden font-bold">Desc:</span>{domain.domain_description || '-'}</TableCell>
                       <TableCell className="sm:table-cell flex items-center gap-2"><span className="sm:hidden font-bold">Inserted:</span>{domain.insert_date ? new Date(domain.insert_date).toLocaleString() : '-'}</TableCell>
                       <TableCell className="sm:table-cell flex items-center gap-2"><span className="sm:hidden font-bold">Updated:</span>{domain.update_date ? new Date(domain.update_date).toLocaleString() : '-'}</TableCell>
-                      <TableCell className="sm:table-cell flex items-center gap-2">
-                        <span className="sm:hidden font-bold">Actions:</span>
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
-                          <Button variant="outline" size="sm" onClick={() => { setEditingDomain(domain); setOpenDialog(true); }}>Edit</Button>
-                          <Button className="bg-red-500 hover:bg-red-600" size="sm" onClick={() => handleDeleteDomain(domain.domain_uuid)}>Delete</Button>
-                        </div>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="text-blue-500 hover:text-blue-700" onClick={() => { setEditingDomain(domain); setOpenDialog(true); }}>
+                            <PenBox className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="w-[95%] sm:max-w-sm">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the domain
+                                        <span className='font-bold'> &quot;{domain.domain_name}&quot; </span>.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteDomain(domain.domain_uuid)}>Continue</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}

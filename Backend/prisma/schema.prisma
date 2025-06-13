@@ -25,9 +25,10 @@ model users {
   password_hash String
   full_name    String?
   email        String?
+  user_enabled Boolean   @default(true)
   roles_id     String    @db.Uuid
   created_at   DateTime  @default(now())
-  
+  updated_at   DateTime  @default(now())
   roles        roles     @relation(fields: [roles_id], references: [roles_id])
   domains_created domains[] @relation("domainsCreated")
   domains_updated domains[] @relation("domainsUpdated")

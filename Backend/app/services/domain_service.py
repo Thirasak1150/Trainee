@@ -34,13 +34,14 @@ async def create_domain(domain: DomainCreate):
 async def update_domain(domains_id: str, domain: DomainUpdate):
     try:
         async for db in get_db():
+            update_data = {
+                "domain_name": domain.domain_name,
+                "enable": domain.enable,
+                "updated_by": domain.updated_by
+            }
             updated_domain = await db.domains.update(
                 where={"domains_id": domains_id},
-                data={
-                    "domain_name": domain.domain_name,
-                    "enable": domain.enable if hasattr(domain, 'enable') else True,
-                    "updated_by": domain.updated_by if hasattr(domain, 'updated_by') else None,
-                }
+                data=update_data
             )
             if updated_domain is None:
                 raise HTTPException(status_code=404, detail="Domain not found")

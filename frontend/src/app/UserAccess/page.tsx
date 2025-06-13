@@ -11,6 +11,18 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { UserAccess } from "@/features/UserAccess/types/Users.type";
+import { PenBox, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 export default function UserAccessPage() {
@@ -393,10 +405,10 @@ export default function UserAccessPage() {
 </TableCell>
                       <TableCell className="sm:table-cell flex items-center gap-2"><span className="sm:hidden font-bold">Inserted:</span>{user.insert_date ? new Date(user.insert_date).toLocaleString() : '-'}</TableCell>
                       <TableCell className="sm:table-cell flex items-center gap-2"><span className="sm:hidden font-bold">Updated:</span>{user.update_date ? new Date(user.update_date).toLocaleString() : '-'}</TableCell>
-                      <TableCell className="flex items-center gap-2 sm:gap-4 pt-3 sm:pt-0">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                      <TableCell className="flex items-center gap-1 sm:gap-2 pt-3 sm:pt-0 text-right justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => {
                             setViewingUser(user);
                             setOpenViewDialog(true);
@@ -404,23 +416,32 @@ export default function UserAccessPage() {
                         >
                           View
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
+                        <Button variant="ghost" size="icon" className="text-blue-500 hover:text-blue-700" onClick={() => {
                             setEditingUser(user);
                             setOpenDialog(true);
-                          }}
-                        >
-                          Edit
+                          }}>
+                            <PenBox className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          onClick={() => handleDeleteUser(user.user_uuid)}
-                        >
-                          Delete
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="w-[95%] sm:max-w-sm">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the user
+                                        <span className='font-bold'> &quot;{user.username}&quot; </span>.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteUser(user.user_uuid)}>Continue</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}

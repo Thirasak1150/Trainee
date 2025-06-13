@@ -7,18 +7,37 @@ import hashlib
 # from psycopg2.extras import RealDictCursor
 # Prisma will be used for DB access
 
-async def get_all_users(skip: int = 0, limit: int = 100):
-    print(f"all users with skip: {skip}, limit: {limit}")
+async def get_all_users():
+    print(f"all users")
     try:
         async for db in get_db():
             # Note: Prisma uses 'take' for the limit
             users = await db.users.find_many(
-                skip=skip,
-                take=limit
+                include={"roles": True}
             )
-            print("users", users)
-            return users
+            list_users = []
+            for user in users:
+       
+                list_users.append({
+                    "users_id": user.users_id,
+                    "username": user.username,
+                    "roles": user.roles.name,
+                    "full_name": user.full_name,
+                    "email": user.email,
+                    "user_enabled": user.user_enabled,  # Convert boolean to string to match frontend expectations
+                })
+            return list_users
         # TODO: Remove psycopg2 code after full Prisma migration
+    except Exception as e:
+        print(e)
+        return {"error": str(e)}
+
+async def get_user_by_uuid(user_uuid: str):
+    print("user uuid", user_uuid)
+    try:
+        async for db in get_db():
+            user = await db.users.find_unique(where={"users_id": user_uuid})
+            return user
     except Exception as e:
         print(e)
         return {"error": str(e)}
@@ -58,13 +77,13 @@ async def get_user_by_login(username: str,password: str):
         return {"error": str(e)}
 
 async def create_user(user_data: dict):
+    print("user_data", user_data)
     try:
         async for db in get_db():
-            user = await db.users.update(
-                where={"users_id": users_id},
+            user = await db.users.create(
                 data={
                     "username": user_data["username"],
-                    "password_hash": user_data["password_hash"],
+                    "password_hash": user_data["password"],
                     "full_name": user_data.get("full_name"),
                     "email": user_data.get("email"),
                     "roles_id": user_data["roles_id"],
@@ -78,15 +97,38 @@ async def create_user(user_data: dict):
 async def update_user(users_id: str, user_data: dict):
     try:
         async for db in get_db():
+            # First get the current user to check for existence
+            current_user = await db.users.find_unique(
+                where={"users_id": users_id}
+            )
+            
+            if not current_user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            # Prepare update data dynamically, only including fields present in the request
+            update_data = {}
+
+            # List of fields that can be updated from user profile page
+            updatable_fields = ["username", "full_name", "email", "user_enabled"]
+            for field in updatable_fields:
+                if field in user_data:
+                    update_data[field] = user_data[field]
+
+            # Handle password update separately
+            if "password" in user_data and user_data["password"]:
+                update_data["password_hash"] = user_data["password"]
+            
+            # Handle roles_id update separately (might be used by other admin features)
+            if "roles_id" in user_data and user_data["roles_id"]:
+                update_data["roles_id"] = user_data["roles_id"]
+            
+            # If there's nothing to update, we can return early.
+            if not update_data:
+                return current_user
+           
             user = await db.users.update(
                 where={"users_id": users_id},
-                data={
-                    "username": user_data["username"],
-                    "password_hash": user_data["password_hash"],
-                    "full_name": user_data.get("full_name"),
-                    "email": user_data.get("email"),
-                    "roles_id": user_data["roles_id"],
-                }
+                data=update_data
             )
             return user
     except Exception as e:

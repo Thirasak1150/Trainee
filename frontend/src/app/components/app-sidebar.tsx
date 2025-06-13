@@ -3,31 +3,32 @@
 import * as React from "react"
 import { useEffect } from "react"
 import {
-  IconDashboard,
-  IconFileAi,
-  IconFolder,
-  IconHome,
-  IconListDetails,
-  IconReport,
+  IconNetwork,
   IconSettings,
-  IconUsers,
-  type IconProps,
-  type Icon as TablerIcon
+  IconFolder,
+  IconList,
+  IconChartBar,
+  IconUser,
+  IconDashboard,
+  IconLockCode,
 } from "@tabler/icons-react";
+import { ComponentType } from "react";
+import { IconProps } from "@tabler/icons-react";
+import { ImSpinner2 } from "react-icons/im";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { NavUser } from "./nav-user";
 import { useUser } from "../Usercontext";
 import IconTechnomic from "@/components/ui/IconTechnomic";
 import axios from "axios";
 import { NavCustom } from "./nav-custom";
-import { Loader2 } from "lucide-react";
 import { getCookie } from "./get-cookie";
 import Link from "next/link";
+
 
 type MenuItem = {
   name: string;
   url: string;
-  icon: React.ComponentType<IconProps>;
+  icon: ComponentType<IconProps>;
 };
 
 type MenuHeader = {
@@ -53,19 +54,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   };
 
   // Map icon names to Tabler icons
-  const getIconComponent = React.useCallback((iconName: string): TablerIcon => {
-    const iconMap: Record<string, TablerIcon> = {
-      dashboard: IconDashboard,
-      users: IconUsers,
-      settings: IconSettings,
-      home: IconHome,
-      folder: IconFolder,
-      report: IconReport,
-      listdetails: IconListDetails,
-      fileai: IconFileAi,
-      // เพิ่มไอคอนที่จำเป็นตาม backend
+  const getIconComponent = React.useCallback((iconName: string): ComponentType<IconProps> => {
+    console.log("iconName", iconName);
+    const iconMap: Record<string, ComponentType<IconProps>> = {
+      "dashboard": IconDashboard,
+      "accounts": IconUser,
+      "menu-manager": IconFolder,
+      "report": IconChartBar,
+      "listdetails": IconList,
+      "access-controls": IconLockCode ,
+      "account-setting": IconSettings,
+      "domains": IconNetwork,
     };
-    return iconMap[iconName.toLowerCase()] || IconFolder;
+    return iconMap[iconName.toLowerCase()] || IconNetwork;
   }, []);
 
   const fetchMenus = React.useCallback(async (user_uuid: string) => {
@@ -149,7 +150,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
           {menuHeaders.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <Loader2 className="animate-spin" />
+              <ImSpinner2 className="animate-spin" />
             </div>
           ) : (
       <SidebarContent>

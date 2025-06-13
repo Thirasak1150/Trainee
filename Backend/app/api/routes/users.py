@@ -1,18 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from app.services.users_service import get_all_users, get_user_by_login, create_user, update_user, delete_user, login_for_access_token
+from app.services.users_service import get_all_users, get_user_by_login, get_user_by_uuid, create_user, update_user, delete_user, login_for_access_token
 from app.schemas.usersSchemas import UserLoginCredentials, LoginResponse
 from typing import Dict
 
 router = APIRouter()
 
 @router.get("/")
-async def read_users(skip: int = 0, limit: int = 100):
+async def read_users():
     """
     ดึงข้อมูลผู้ใช้ทั้งหมด
     """
-    users = await get_all_users(skip=skip, limit=limit)
+    users = await get_all_users()
     return users
 
+@router.get("/{user_uuid}")
+async def read_user_by_uuid(user_uuid: str):
+    """
+    ดึงข้อมูลผู้ใช้ตาม user_uuid
+    """
+    user = await get_user_by_uuid(user_uuid)
+    return user
 
 # Endpoint สำหรับดึงข้อมูลผู้ใช้ตาม username
 @router.post("/login")
