@@ -74,8 +74,12 @@ export function middleware(request: NextRequest) {
     "/domain",        // (ภาษาไทย) อนุญาต /domain และ subpaths เช่น /domain/manage
     "/useraccess",    // (ภาษาไทย) อนุญาต /useraccess และ subpaths เช่น /useraccess/roles
     "/usersettings" ,
+    // "Advance"
     "/advance",
-    "/Advance/Menu_Manager"
+    "/Advance/Menu_Manager",
+    // Home
+    "/Home/Account_Setting",
+
   ];
 
   // (ภาษาไทย) แสดงค่าตัวแปรเพื่อการดีบัก

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.api.routes import users
 from app.api.routes import domain
 from app.api.routes import menus
+from app.api.routes import roles
 from psycopg2.extras import RealDictCursor
 from typing import Optional, List
 import uuid  # For generating user_uuid
@@ -31,6 +32,7 @@ app.add_middleware(
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(domain.router, prefix="/api/domain", tags=["Domain"])
 app.include_router(menus.router, prefix="/api/menu", tags=["Menu"])
+app.include_router(roles.router, prefix="/api/roles", tags=["Roles"])
 
 @app.get("/")
 async def root():

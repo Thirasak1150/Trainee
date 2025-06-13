@@ -24,11 +24,15 @@ export function ActiveThemeProvider({
   children: ReactNode
   initialTheme?: string
 }) {
-  const [activeTheme, setActiveTheme] = useState<string>(
-    () => initialTheme || DEFAULT_THEME
-  )
+  const [activeTheme, setActiveTheme] = useState<string>(() => {
+    if (typeof window === "undefined") {
+      return initialTheme || DEFAULT_THEME
+    }
+    return localStorage.getItem("theme-color") || initialTheme || DEFAULT_THEME
+  })
 
   useEffect(() => {
+    localStorage.setItem("theme-color", activeTheme)
     Array.from(document.body.classList)
       .filter((className) => className.startsWith("theme-"))
       .forEach((className) => {
