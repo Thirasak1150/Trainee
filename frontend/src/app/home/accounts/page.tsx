@@ -5,46 +5,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Switch } from "@/components/ui/switch"
-import axios from 'axios'
 import { toast } from "sonner"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PenBox, Trash2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
-interface Account {
-  users_id: string;
-  username: string;
-  email: string | null;
-  roles: string;
-  user_enabled: string;
-  roles_id: string;
-}
-
-interface Role {
-  roles_id: string;
-  name: string;
-  description: string | null;
-}
-
-interface FormData {
-  username: string;
-  email: string;
-  password: string;
-  user_enabled: boolean;
-  roles_id: string;
-}
+import { PenBox, Trash2 } from "lucide-react"
+import { Account, FormData, Role } from '@/features/Accounts/types/Formdata'
+import { fetchAccounts, fetchRoles } from '@/features/Accounts/service/fetchAccounts'
+import { editAccount } from '@/features/Accounts/service/EditAcoounts'
+import { deleteAccount } from '@/features/Accounts/service/DeleteAcoounts'
+import { addAcount } from '@/features/Accounts/service/AddAcoounts'
+import AddAccountDialog from '@/features/Accounts/components/AddAccountDialog'
+import EditAccountDialog from '@/features/Accounts/components/EditAccountDialog'
+import DeleteAccountDialog from '@/features/Accounts/components/DeleteAccountDialog'
 
 const AccountsPage = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -71,34 +41,20 @@ const AccountsPage = () => {
   const [deletingAccount, setDeletingAccount] = useState<Account | null>(null)
 
   useEffect(() => {
-    fetchAccounts()
-    fetchRoles()
+    fetchData()
   }, [])
 
-  const fetchAccounts = async () => {
+  const fetchData = async () => {
     try {
-      const { data } = await axios.get('http://localhost:8000/api/users')
-      console.log("data", data)
-      if (data.error) {
-        console.error('Error fetching accounts:', data.error)
-        return
-      }
-      setAccounts(data)
-    } catch (error) {
-      console.error('Error fetching accounts:', error)
-    } finally {
+      const dataAccounts = await fetchAccounts()
+      setAccounts(dataAccounts)
       setLoading(false)
-    }
-  }
-
-  const fetchRoles = async () => {
-    try {
-      const { data } = await axios.get('http://localhost:8000/api/roles')
-      setRoles(data)
+      const dataRoles = await fetchRoles()
+      setRoles(dataRoles)
     } catch (error) {
-      console.error('Error fetching roles:', error)
-      toast.error('Error fetching roles')
+      toast.error('Error fetching accounts')
     }
+    setLoading(false)
   }
 
   const handleEdit = (account: Account) => {
@@ -124,95 +80,19 @@ const AccountsPage = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!editingAccount) return
-
-    try {
-      const updateData = {
-        ...formData,
-        roles_id: formData.roles_id !== editingAccount.roles_id ? formData.roles_id : undefined,
-        user_enabled: formData.user_enabled
-      }
-      console.log("updateData", updateData)
-      const { data } = await axios.put(
-        `http://localhost:8000/api/users/${editingAccount.users_id}`,
-        updateData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (data) {
-        setOpenEditDialog(false)
-        toast.success('Account updated successfully')
-        fetchAccounts() // Refresh the list
-      }
-    } catch (error) {
-      toast.error('Error updating account')
-      console.error('Error updating account:', error)
-    }
-  }
-
-  const handleAddInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setAddFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    editAccount(editingAccount, formData, setOpenEditDialog, fetchData)
   }
 
   const handleAddSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    try {
-      console.log("addFormData", addFormData)
-      const { data } = await axios.post(
-        'http://localhost:8000/api/users',
-        addFormData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (data) {
-        setOpenDialog(false)
-        toast.success('Account created successfully')
-        fetchAccounts() // Refresh the list
-        // Reset form
-        setAddFormData({
-          username: '',
-          email: '',
-          password: '',
-          user_enabled: true,
-          roles_id: ''
-        })
-      }
-    } catch (error) {
-      console.error('Error creating account:', error)
-      toast.error('Error creating account')
-    }
+    addAcount(addFormData, setOpenDialog, fetchData, setAddFormData)
   }
 
   const handleDelete = async () => {
-    if (!deletingAccount) return
-
-    try {
-      const { data } = await axios.delete(`http://localhost:8000/api/users/${deletingAccount.users_id}`)
-      
-      if (data) {
-        toast.success('Account deleted successfully')
-        fetchAccounts() // Refresh the list
-      }
-    } catch (error) {
-      console.error('Error deleting account:', error)
-      toast.error('Error deleting account')
-    } finally {
-      setDeletingAccount(null)
-    }
+    deleteAccount(deletingAccount!, fetchData, setDeletingAccount)
   }
 
-  const filteredAccounts = accounts.filter(account => 
+  const filteredAccounts = accounts.filter(account =>
     account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (account.email && account.email.toLowerCase().includes(searchTerm.toLowerCase()))
   )
@@ -227,7 +107,7 @@ const AccountsPage = () => {
           <div className="flex flex-row justify-between items-center gap-2 sm:gap-3">
             <div className="flex-1 md:flex-none">
               <Label htmlFor="search" className="sr-only">Search Accounts</Label>
-              <Input 
+              <Input
                 id="search"
                 placeholder="Search accounts..."
                 className="w-full"
@@ -235,87 +115,15 @@ const AccountsPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="flex-shrink-0">Add Account</Button>
-              </DialogTrigger>
-              <DialogContent className={`w-[95%] sm:w-[500px]`}>
-                <DialogHeader className="border-b pb-3">
-                  <DialogTitle className="text-xl font-bold">Add New Account</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleAddSubmit} className="space-y-5 pt-5">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4">
-                      <div>
-                        <Label htmlFor="username" className="font-semibold">Username</Label>
-                        <Input 
-                          id="username" 
-                          name="username"
-                          className="mt-1"
-                          value={addFormData.username}
-                          onChange={handleAddInputChange}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email" className="font-semibold">Email</Label>
-                        <Input 
-                          id="email" 
-                          name="email"
-                          className="mt-1"
-                          value={addFormData.email}
-                          onChange={handleAddInputChange}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="role" className="font-semibold">Role</Label>
-                      <Select
-                        value={addFormData.roles_id}
-                        onValueChange={(value) => setAddFormData(prev => ({ ...prev, roles_id: value }))}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roles.map((role) => (
-                            <SelectItem key={role.roles_id} value={role.roles_id}>
-                              {role.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg border">
-                      <Label htmlFor="enabled" className="font-semibold">Enabled</Label>
-                      <Switch 
-                        id="enabled"
-                        name="user_enabled"
-                        checked={addFormData.user_enabled}
-                        onCheckedChange={(checked) => setAddFormData(prev => ({ ...prev, user_enabled: checked }))}
-                        className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="password" className="font-semibold">Password</Label>
-                      <Input 
-                        id="password" 
-                        name="password"
-                        type="password"
-                        className="mt-2"
-                        value={addFormData.password}
-                        onChange={handleAddInputChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-3 border-t">
-                    <Button type="button" variant="outline" size="sm" onClick={() => setOpenDialog(false)}>Cancel</Button>
-                    <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700">Add</Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <AddAccountDialog
+              open={openDialog}
+              setOpen={setOpenDialog}
+              formData={addFormData}
+              setFormData={setAddFormData}
+              roles={roles}
+              onSubmit={handleAddSubmit}
+            />
+            <Button size="sm" className="flex-shrink-0" onClick={() => setOpenDialog(true)}>Add Account</Button>
           </div>
         </CardContent>
       </Card>
@@ -360,8 +168,8 @@ const AccountsPage = () => {
                         <span className="sm:hidden font-bold">Role:</span>
                         {account.roles}
                       </TableCell>
-                      <TableCell 
-                      className="sm:table-cell flex items-center gap-2">
+                      <TableCell
+                        className="sm:table-cell flex items-center gap-2">
                         <span className="sm:hidden font-bold">Status:</span>
                         <div className="flex items-center gap-2">
                           <span className={`h-3 w-3 rounded-full ${String(account.user_enabled).toLowerCase() === 'true' ? 'bg-green-500' : 'bg-red-500'}`}></span>
@@ -369,29 +177,18 @@ const AccountsPage = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" className=" hover:text-yellow-400"  onClick={() => handleEdit(account)}>
-                            <PenBox className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className=" hover:text-yellow-400" onClick={() => handleEdit(account)}>
+                          <PenBox className="h-4 w-4" />
                         </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => setDeletingAccount(account)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="w-[95%] sm:max-w-sm">
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the account
-                                        <span className='font-bold'> &quot;{account.username}&quot; </span>.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={() => setDeletingAccount(null)}>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                        <DeleteAccountDialog
+                          open={!!deletingAccount}
+                          setOpen={setDeletingAccount}
+                          account={deletingAccount}
+                          onDelete={handleDelete}
+                        />
+                        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => setDeletingAccount(account)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -402,83 +199,14 @@ const AccountsPage = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
-        <DialogContent className={`w-[95%] sm:w-[500px]`}>
-          <DialogHeader className="border-b pb-3">
-            <DialogTitle className="text-xl font-bold">Edit Account</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-5 pt-5">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <Label htmlFor="username" className="font-semibold">Username</Label>
-                  <Input 
-                    id="username" 
-                    name="username"
-                    className="mt-1"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="font-semibold">Email</Label>
-                  <Input 
-                    id="email" 
-                    name="email"
-                    className="mt-1"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="role" className="font-semibold">Role</Label>
-                <Select
-                  value={formData.roles_id}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, roles_id: value }))}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.roles_id} value={role.roles_id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-lg border">
-                <Label htmlFor="enabled" className="font-semibold">Enabled</Label>
-                <Switch 
-                  id="enabled"
-                  name="user_enabled"
-                  checked={formData.user_enabled}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, user_enabled: checked }))}
-                  className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-                />
-              </div>
-              <div>
-                <Label htmlFor="password" className="font-semibold">New Password (leave blank to keep current)</Label>
-                <Input 
-                  id="password" 
-                  name="password"
-                  type="password"
-                  className="mt-2"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-3 border-t">
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpenEditDialog(false)}>Cancel</Button>
-              <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700">Save Changes</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <EditAccountDialog
+        open={openEditDialog}
+        setOpen={setOpenEditDialog}
+        formData={formData}
+        setFormData={setFormData}
+        roles={roles}
+        onSubmit={handleSubmit}
+      />
     </div>
   )
 }

@@ -21,3 +21,8 @@ class User(BaseModel):
     user_status: Optional[str] = None
     user_enabled: Optional[str] = None
     
+class UserUpdate(BaseModel):
+    username: str
+    user_email: Optional[str] = None
+    full_name: Optional[str] = None
+    password: Optional[str] = None
