@@ -29,7 +29,7 @@ type MenuItem = {
   icon: ComponentType<IconProps>;
 };
 
-export type MenuHeader = {
+type MenuHeader = {
   headerName: string;
   items: MenuItem[];
   order_index: number;
@@ -39,10 +39,10 @@ export type MenuHeader = {
 
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const { Fullname, Useremail, user_uuid, menu, setMenu } = useUser();
+  const { Fullname, Useremail, user_uuid } = useUser();
   const [mounted, setMounted] = React.useState(false);
   const [menuHeaders, setMenuHeaders] = React.useState<MenuHeader[]>([]);
-  // removed redundant user_id state
+  const [user_id, setUser_id] = React.useState(user_uuid || getCookie("user_uuid") || "");
   React.useEffect(() => setMounted(true), []);
 
   const profileData = {
@@ -66,14 +66,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   }, []);
 
   const fetchMenus = React.useCallback(async (user_uuid: string) => {
-    console.log("user_uuid", user_uuid);
-    // ใส่ดีเลย์ 2 วินาที
-    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log("user_uuid", user_id);
     try {
-      const response = await axios.get(`http://localhost:8000/api/menu/${user_uuid}`);
+      const response = await axios.get(`http://localhost:8000/api/menu/${user_id}`);
       console.log("response", response.data.length);
-      if (!response.data?.length) {
+      if (response.data.length == 0 || response.data.length == undefined) {
         console.log("No data returned");
+        setUser_id(user_uuid);
         return;
       }
       // แปลงข้อมูลให้เป็น array ของ header ที่มีเมนูย่อยในรูปแบบที่ NavMain, NavDocuments, NavSecondary คาดหวัง
@@ -96,27 +95,30 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       });
 
       setMenuHeaders(headers);
-      setMenu(headers);
       console.log("Menus loaded:", headers);
     } catch (error) {
       console.error("Error fetching menus:", error);
     }
-
-  }, [getIconComponent, menu, setMenu]);
+  }, [user_id, getIconComponent]);
   // โหลดทุก  1 วิ 5 ครั้ง
   useEffect(() => {
+    if (menuHeaders.length > 0) return;
+    console.log("user_uuid", user_uuid);
     const uuid = user_uuid || getCookie("user_uuid");
-    if (!uuid) return;
-    console.log("menu app sidebar", menu);
-    if (menu.length > 0) return;
-    console.log("menu app sidebar2", menu);
-    // initial load
-    fetchMenus(uuid);
-
-    // refresh every 5s if you really need live updates
-    const interval = setInterval(() => fetchMenus(uuid), 5000);
+    if (uuid) {
+      setUser_id(uuid);
+      fetchMenus(uuid);
+    }
+    const interval = setInterval(() => {
+      console.log("user_uuid", user_uuid);
+      const uuid = user_uuid || getCookie("user_uuid");
+      if (uuid) {
+        setUser_id(uuid);
+        fetchMenus(uuid);
+      }
+    }, 1000 * 5);
     return () => clearInterval(interval);
-  }, [fetchMenus, user_uuid]);
+  }, [fetchMenus, menuHeaders.length, user_uuid]);
   
   if (!mounted) return null; // รอให้ client mount ก่อน render
 

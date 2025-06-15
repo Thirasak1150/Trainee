@@ -99,20 +99,22 @@ model role_menu_items {
   @@id([roles_id, menu_items_id])
 }
 
-
 model extensions {
-  extension_id     String   @id @default(uuid()) @db.Uuid
-  domain_id        String   @db.Uuid
-  user_id          String?  @db.Uuid
-  extension_number String   @unique
-  password         String
-  voicemail_enabled Boolean @default(false)
-  is_active        Boolean  @default(true)
-  call_forwarding  String?  // เบอร์ปลายทางถ้า forward
-  description      String?
-  created_at       DateTime @default(now())
-  updated_at       DateTime @default(now())
+  extension_id      String   @id @default(uuid()) @db.Uuid
+  domain_id         String   @db.Uuid
+  user_id           String?  @db.Uuid
+  extension_number  String
+  voicemail_enabled Boolean  @default(false)
+  is_active         Boolean  @default(true)
+  call_forwarding   String?  // เบอร์ปลายทางถ้า forward
+  description       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
 
-  domain           domains  @relation(fields: [domain_id], references: [domains_id])
-  user             users?   @relation(fields: [user_id], references: [users_id])
+  // unique constraint ระดับ domain + extension
+  @@unique([domain_id, extension_number])
+
+  // relation
+  domain domains  @relation(fields: [domain_id], references: [domains_id])
+  user   users?   @relation(fields: [user_id], references: [users_id])
 }

@@ -47,10 +47,10 @@ const AccountsPage = () => {
   const fetchData = async () => {
     try {
       const dataAccounts = await fetchAccounts()
-      setAccounts(dataAccounts)
+      setAccounts(Array.isArray(dataAccounts) ? dataAccounts : [])
       setLoading(false)
       const dataRoles = await fetchRoles()
-      setRoles(dataRoles)
+      setRoles(Array.isArray(dataRoles) ? dataRoles : [])
     } catch (error) {
       toast.error('Error fetching accounts')
     }

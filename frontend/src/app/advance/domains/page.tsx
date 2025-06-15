@@ -217,7 +217,7 @@ const DomainsPage = () => {
                                 </DialogHeader>
                                 <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
                                     <div>
-                                        <Label htmlFor="domain_name">Domain Name</Label>
+                                        <Label className=' mb-2' htmlFor="domain_name">Domain Name</Label>
                                         <Input
                                             id="domain_name"
                                             value={editingDomain ? editingDomain.domain_name : newDomain.domain_name}

@@ -22,26 +22,25 @@ export function middleware(request: NextRequest) {
       processedUserRole = roleLower;
     }
   }
+  
   console.log("processedUserRole", processedUserRole);
   const currentUserRole = processedUserRole;
-  const loginPath = '/'; // (ภาษาไทย) หน้าหลักคือหน้า login
-  const dashboardPath = '/Dashbord'; // (ภาษาไทย) หน้า Dashboard ใหม่สำหรับทุก role
+  const loginPath = '/'; // หน้าหลักคือหน้า login
+  const dashboardPath = '/dashboard'; // แก้ไขจาก /Dashbord เป็น /dashboard
 
-  // (ภาษาไทย) Path ที่เคยเป็นของแต่ละ role (ตอนนี้จะ redirect ไป /Dashbord)
+  // Path ที่เคยเป็นของแต่ละ role (ตอนนี้จะ redirect ไป /dashboard)
   const oldRoleSpecificPaths = ['/User', '/Admin', '/Superadmin'];
 
   if (!currentUserRole) {
-    // (ภาษาไทย) --- ผู้ใช้ยังไม่ได้ Login ---
+    // ผู้ใช้ยังไม่ได้ Login
     if (pathname === loginPath) {
-      // (ภาษาไทย) ถ้าอยู่ที่หน้า Login อยู่แล้ว ก็อนุญาต
+      // ถ้าอยู่ที่หน้า Login อยู่แล้ว ก็อนุญาต
       return NextResponse.next();
     }
-    // (ภาษาไทย) ถ้าพยายามเข้าหน้า Dashboard หรือ path อื่นๆ ที่ไม่ใช่หน้า Login ให้ redirect ไปหน้า Login
+    // ถ้าพยายามเข้าหน้า Dashboard หรือ path อื่นๆ ที่ไม่ใช่หน้า Login ให้ redirect ไปหน้า Login
     console.log(`Unauthenticated user trying to access ${pathname}, redirecting to login.`);
     return NextResponse.redirect(new URL(loginPath, request.url));
   }
-
-  // (ภาษาไทย) --- ผู้ใช้ Login แล้ว (มี currentUserRole) ---
 
   // (ภาษาไทย) ตรวจสอบว่า role ที่ได้จาก cookie ถูกต้องหรือไม่
   if (!['user', 'admin', 'superadmin'].includes(currentUserRole)) {
@@ -68,19 +67,19 @@ export function middleware(request: NextRequest) {
   // (ภาษาไทย) ทำให้ path ทั้งหมดเป็นตัวพิมพ์เล็กเพื่อการเปรียบเทียบที่สอดคล้องกัน
   const normalizedPathname = pathname.toLowerCase();
   // (ภาษาไทย) กำหนดรายการ path ที่อนุญาต (เป็นตัวพิมพ์เล็ก และไม่ซ้ำซ้อน)
-  // (ภาษาไทย) dashboardPath ถูกแปลงเป็น lowercase แล้ว
   const normalizedAllowedBasePaths = [
-    "/dashbord",
+    "/dashboard",
     "/domain",
     "/useraccess",
     "/usersettings",
     "/advance",
     "/advance/access-controls",
     "/advance/domains",
-
-
+    "/advance/menu-manager",
+    "/home",
     "/home/account-setting",
     "/home/accounts",
+    "/home/extensions"
   ];
 
   // (ภาษาไทย) แสดงค่าตัวแปรเพื่อการดีบัก

@@ -26,16 +26,22 @@ export const handleLogin = async (
         const userRole = data.permissions || undefined;
         // Expires in 1 day, adjust as needed
         const expires = new Date(Date.now() + 86400e3).toUTCString();
-        const path = "/";
-        const sameSite = "SameSite=Lax";
 
-        document.cookie = `userRole=${userRole}; path=${path}; expires=${expires}; ${sameSite}`;
-        document.cookie = `user_uuid=${data.user_id}; path=${path}; expires=${expires}; ${sameSite}`;
-        document.cookie = `full_name=${encodeURIComponent(data.full_name)}; path=${path}; expires=${expires}; ${sameSite}`;
-        document.cookie = `email=${data.email}; path=${path}; expires=${expires}; ${sameSite}`;
+        // Set cookies with proper attributes
+        document.cookie = `userRole=${userRole}; path=/; expires=${expires}; SameSite=Lax; secure`;
+        document.cookie = `user_uuid=${data.user_id}; path=/; expires=${expires}; SameSite=Lax; secure`;
+        document.cookie = `full_name=${encodeURIComponent(data.full_name)}; path=/; expires=${expires}; SameSite=Lax; secure`;
+        document.cookie = `email=${data.email}; path=/; expires=${expires}; SameSite=Lax; secure`;
 
-        // Redirect to the dashboard, the context will update on the new page
-        router.push('/dashboard'); 
+        console.log("Setting cookies:", {
+          userRole,
+          user_uuid: data.user_id,
+          full_name: data.full_name,
+          email: data.email
+        });
+
+        // Let middleware handle the redirect
+        router.push('/');
           }
     } catch (error) {
         const axiosError = error as AxiosError<{ detail?: string }>;

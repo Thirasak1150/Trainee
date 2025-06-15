@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { ReactNode, createContext, useState, useContext } from "react";
+import { MenuHeader } from "./components/app-sidebar";
 
 // Define the shape of the user object (customize as needed)
 export type User = {
@@ -17,6 +18,8 @@ interface UserContextType {
   Useremail: string | null;
   Fullname: string | null;
   logout: () => void;
+  menu: MenuHeader[];
+  setMenu: React.Dispatch<React.SetStateAction<MenuHeader[]>>;
 }
 
 // Create the context with default undefined
@@ -46,9 +49,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRole] = useState<string | null>(() => getCookie("userRole"));
   const [Useremail, setUseremail] = useState<string | null>(() => getCookie("email"));
   const [Fullname, setFullname] = useState<string | null>(() => getCookie("full_name"));
+  const [menu, setMenu] = useState<MenuHeader[]>([]);
   const router = useRouter();
 
-  const logout = () => {
+  const logout = async () => {
+    router.push('/');
     setUser_uuid(null);
     setUserRole(null);
     setUseremail(null);
@@ -58,10 +63,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     document.cookie = 'userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     document.cookie = 'email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     document.cookie = 'full_name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    router.push('/');
+    setMenu([]);
+
   };
 
-  const value = { user_uuid, userRole, Useremail, Fullname, logout };
+  const value = { user_uuid, userRole, Useremail, Fullname, logout, menu, setMenu };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

@@ -2,20 +2,21 @@ from prisma import Prisma
 from contextlib import asynccontextmanager
 
 # สร้าง Prisma client instance ที่สามารถ import ได้โดยตรง
-prisma = Prisma()
+prisma = Prisma(auto_register=True)
 
 # สร้าง async context manager สำหรับการเชื่อมต่อกับฐานข้อมูล
 @asynccontextmanager
-async def get_prisma():
+async def get_db_context():
     try:
-        await prisma.connect()
+        if not prisma.is_connected():
+            await prisma.connect()
         yield prisma
     finally:
-        await prisma.disconnect()
+        if prisma.is_connected():
+            await prisma.disconnect()
 
 # ฟังก์ชันสำหรับการเชื่อมต่อกับฐานข้อมูลในการใช้งานแบบ dependency
 async def get_db():
-    # The connection is now managed by startup/shutdown events in main.py
-    # This generator simply yields the already connected instance.
-    yield prisma
+    async with get_db_context() as db:
+        yield db
 

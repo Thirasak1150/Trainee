@@ -21,5 +21,6 @@ export
     } catch (error) {
       console.error('Error fetching roles:', error)
       toast.error('Error fetching roles')
+      return [];
     }
   }

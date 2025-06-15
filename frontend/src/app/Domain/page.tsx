@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PenBox, Trash2 } from "lucide-react";
+import "./style.css";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -178,8 +179,8 @@ export default function DomainPage() {
                   <DialogTitle>{editingDomain ? "Edit Domain" : "Add New Domain"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={editingDomain ? handleEditDomain : handleAddDomain} className="space-y-4 pt-4">
-                  <div>
-                    <Label htmlFor="domain_name">Domain Name</Label>
+                  <div className=" flex  gap-4">
+                    <Label htmlFor="domain_name ">Domain Name</Label>
                     <Input 
                       id="domain_name" 
                       value={editingDomain ? editingDomain.domain_name : newDomain.domain_name} 

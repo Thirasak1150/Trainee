@@ -6,6 +6,7 @@ from app.api.routes import users
 from app.api.routes import domain
 from app.api.routes import menus
 from app.api.routes import roles
+from app.api.routes import extensions
 from psycopg2.extras import RealDictCursor
 from typing import Optional, List
 import uuid  # For generating user_uuid
@@ -19,6 +20,7 @@ app = FastAPI(
 )
 
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -27,12 +29,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # Include routers
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(domain.router, prefix="/api/domain", tags=["Domain"])
 app.include_router(menus.router, prefix="/api/menu", tags=["Menu"])
 app.include_router(roles.router, prefix="/api/roles", tags=["Roles"])
+app.include_router(extensions.router, prefix="/api", tags=["Extensions"])
 
 @app.get("/")
 async def root():
