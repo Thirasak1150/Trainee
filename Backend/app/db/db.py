@@ -12,11 +12,11 @@ async def get_db_context():
             await prisma.connect()
         yield prisma
     finally:
-        if prisma.is_connected():
-            await prisma.disconnect()
+        # Do not disconnect here to keep Prisma client alive across requests.
+        # Disconnect will be handled on application shutdown event if needed.
+        pass
 
 # ฟังก์ชันสำหรับการเชื่อมต่อกับฐานข้อมูลในการใช้งานแบบ dependency
 async def get_db():
     async with get_db_context() as db:
         yield db
-

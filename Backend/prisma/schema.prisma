@@ -1,120 +1,139 @@
 generator client {
-  provider             = "prisma-client-py"
-  interface            = "asyncio"
-  recursive_type_depth = 5
+  provider             = "prisma-client-py"   // ใช้สร้าง Prisma client ด้วย Python
+  interface            = "asyncio"            // ใช้ async interface สำหรับการเชื่อมต่อแบบ asynchronous
+  recursive_type_depth = 5                    // กำหนดความลึกสูงสุดของ recursive types ใน client
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"                      // ใช้ฐานข้อมูล PostgreSQL
+  url      = env("DATABASE_URL")              // เชื่อมต่อกับฐานข้อมูลผ่าน environment variable DATABASE_URL
 }
 
 model roles {
-  roles_id    String          @id @default(uuid()) @db.Uuid
-  name        String          @unique
-  description String?
+  roles_id    String          @id @default(uuid()) @db.Uuid  // รหัสบทบาท (Primary Key) แบบ UUID อัตโนมัติ
+  name        String          @unique                       // ชื่อบทบาท เช่น admin, user (ต้องไม่ซ้ำกัน)
+  description String?                                         // คำอธิบายบทบาท (ไม่บังคับ)
 
-  users       users[]
-  role_menus  role_menus[]
-  role_menu_items role_menu_items[]
+  users       users[]                                         // ความสัมพันธ์แบบ one-to-many กับ users (ผู้ใช้ที่มีบทบาทนี้)
+  role_menus  role_menus[]                                   // ความสัมพันธ์กับ role_menus เพื่อกำหนดสิทธิ์เมนู
+  role_menu_items role_menu_items[]                           // ความสัมพันธ์กับ role_menu_items เพื่อกำหนดสิทธิ์เมนูย่อย
 }
 
 model users {
-  users_id     String    @id @default(uuid()) @db.Uuid
-  username     String    @unique
-  password_hash String
-  full_name    String?
-  email        String?
-  user_enabled Boolean   @default(true)
-  roles_id     String    @db.Uuid
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @default(now())
-  roles        roles     @relation(fields: [roles_id], references: [roles_id])
-  domains_created domains[] @relation("domainsCreated")
-  domains_updated domains[] @relation("domainsUpdated")
-  extensions extensions[]
+  users_id     String    @id @default(uuid()) @db.Uuid       // รหัสผู้ใช้ (Primary Key) แบบ UUID
+  username     String    @unique                             // ชื่อผู้ใช้ (login) ต้องไม่ซ้ำกัน
+  password_hash String                                       // รหัสผ่านที่ถูกเข้ารหัส
+  full_name    String?                                        // ชื่อเต็มของผู้ใช้ (ไม่บังคับ)
+  email        String?                                        // อีเมล (ไม่บังคับ)
+  user_enabled Boolean   @default(true)                      // สถานะผู้ใช้ เปิด/ปิด ใช้งาน
+  roles_id     String    @db.Uuid                             // รหัสบทบาทผู้ใช้ (Foreign Key)
+  created_at   DateTime  @default(now())                      // วันที่สร้างบัญชี
+  updated_at   DateTime  @default(now())                      // วันที่อัปเดตบัญชีล่าสุด
+  roles        roles     @relation(fields: [roles_id], references: [roles_id])  // ความสัมพันธ์กับ roles
+
+  domains_created domains[] @relation("domainsCreated")       // รายการ domain ที่ผู้ใช้สร้าง
+  domains_updated domains[] @relation("domainsUpdated")       // รายการ domain ที่ผู้ใช้แก้ไขล่าสุด
 }
 
 model domains {
-  domains_id   String   @id @default(uuid()) @db.Uuid
-  domain_name  String   @unique
-  enable      Boolean   @default(true)
-  created_at  DateTime  @default(now())
-  created_by  String?   @db.Uuid
-  updated_at  DateTime  @default(now())
-  updated_by  String?   @db.Uuid
-  extensions extensions[]
+  domains_id   String   @id @default(uuid()) @db.Uuid         // รหัส domain (Primary Key) แบบ UUID
+  domain_name  String   @unique                                // ชื่อ domain ต้องไม่ซ้ำ
+  enable       Boolean  @default(true)                         // สถานะเปิด/ปิดใช้งาน domain
+  created_at   DateTime @default(now())                        // วันที่สร้าง
+  created_by   String?  @db.Uuid                                // รหัสผู้ใช้ที่สร้าง domain (Foreign Key)
+  updated_at   DateTime @default(now())                        // วันที่แก้ไขล่าสุด
+  updated_by   String?  @db.Uuid                                // รหัสผู้ใช้ที่แก้ไข domain ล่าสุด (Foreign Key)
+  extensions   extensions[]                                    // ความสัมพันธ์กับ extensions (หลายรายการ)
 
-  creator     users?   @relation("domainsCreated", fields: [created_by], references: [users_id], onDelete: SetNull)
-  updater     users?   @relation("domainsUpdated", fields: [updated_by], references: [users_id], onDelete: SetNull)
+  // ความสัมพันธ์กับผู้ใช้ที่สร้าง domain แบบ cascade delete
+  creator users? @relation("domainsCreated", fields: [created_by], references: [users_id], onDelete: Cascade)
+
+  // ความสัมพันธ์กับผู้ใช้ที่แก้ไข domain (ถ้า user ถูกลบจะ set null)
+  updater users? @relation("domainsUpdated", fields: [updated_by], references: [users_id], onDelete: SetNull)
 }
 
 model menu_headers {
-  menu_headers_id String        @id @default(uuid()) @db.Uuid
-  name_default    String
-  name_custom     String?
-  icon            String?
-  order_index     Int           @default(0)
-  is_active       Boolean       @default(true)
-  created_at      DateTime      @default(now())
-  updated_at      DateTime      @default(now())
+  menu_headers_id String        @id @default(uuid()) @db.Uuid  // รหัสเมนูหลัก (Primary Key)
+  name_default    String                                    // ชื่อเมนูหลักภาษาเริ่มต้น
+  name_custom     String?                                   // ชื่อเมนูหลักแบบกำหนดเอง (ไม่บังคับ)
+  icon            String?                                   // ไอคอนเมนู (ไม่บังคับ)
+  order_index     Int           @default(0)                 // ลำดับการแสดงเมนู
+  is_active       Boolean       @default(true)              // สถานะเมนู เปิด/ปิดใช้งาน
+  created_at      DateTime      @default(now())             // วันที่สร้างเมนู
+  updated_at      DateTime      @default(now())             // วันที่อัปเดตเมนูล่าสุด
 
-  menu_items     menu_items[]
-  role_menus     role_menus[]
+  menu_items     menu_items[]                                // เมนูย่อย (relation)
+  role_menus     role_menus[]                                // กำหนดสิทธิ์ role กับเมนูหลัก
 }
 
 model menu_items {
-  menu_items_id  String      @id @default(uuid()) @db.Uuid
-  menu_headers_id String     @db.Uuid
-  name_default   String
-  name_custom    String?
-  path           String?
-  icon           String?
-  order_index    Int         @default(0)
-  is_active      Boolean     @default(true)
-  created_at     DateTime    @default(now())
-  updated_at     DateTime    @default(now())
+  menu_items_id  String      @id @default(uuid()) @db.Uuid   // รหัสเมนูย่อย (Primary Key)
+  menu_headers_id String     @db.Uuid                        // รหัสเมนูหลัก (Foreign Key)
+  name_default   String                                    // ชื่อเมนูย่อยภาษาเริ่มต้น
+  name_custom    String?                                   // ชื่อเมนูย่อยแบบกำหนดเอง (ไม่บังคับ)
+  path           String?                                   // URL หรือ path ของเมนูย่อย
+  icon           String?                                   // ไอคอนเมนูย่อย (ไม่บังคับ)
+  order_index    Int         @default(0)                   // ลำดับการแสดงเมนูย่อย
+  is_active      Boolean     @default(true)                // สถานะเมนูย่อย เปิด/ปิดใช้งาน
+  created_at     DateTime    @default(now())               // วันที่สร้างเมนูย่อย
+  updated_at     DateTime    @default(now())               // วันที่อัปเดตเมนูย่อยล่าสุด
 
-  menu_header    menu_headers @relation(fields: [menu_headers_id], references: [menu_headers_id], onDelete: Cascade)
-  role_menu_items role_menu_items[]
+  menu_header    menu_headers @relation(fields: [menu_headers_id], references: [menu_headers_id], onDelete: Cascade)  // ความสัมพันธ์กับเมนูหลัก
+  role_menu_items role_menu_items[]                        // กำหนดสิทธิ์ role กับเมนูย่อย
 }
 
 model role_menus {
-  roles_id       String      @db.Uuid
-  menu_headers_id String     @db.Uuid
+  roles_id       String      @db.Uuid                       // รหัสบทบาท (Foreign Key)
+  menu_headers_id String     @db.Uuid                       // รหัสเมนูหลัก (Foreign Key)
 
-  roles         roles       @relation(fields: [roles_id], references: [roles_id], onDelete: Cascade)
-  menu_header   menu_headers @relation(fields: [menu_headers_id], references: [menu_headers_id], onDelete: Cascade)
+  roles         roles       @relation(fields: [roles_id], references: [roles_id], onDelete: Cascade)          // ความสัมพันธ์กับ roles
+  menu_header   menu_headers @relation(fields: [menu_headers_id], references: [menu_headers_id], onDelete: Cascade)  // ความสัมพันธ์กับเมนูหลัก
 
-  @@id([roles_id, menu_headers_id])
+  @@id([roles_id, menu_headers_id])                       // กำหนด composite primary key
 }
 
 model role_menu_items {
-  roles_id      String      @db.Uuid
-  menu_items_id String      @db.Uuid
+  roles_id      String      @db.Uuid                       // รหัสบทบาท (Foreign Key)
+  menu_items_id String      @db.Uuid                       // รหัสเมนูย่อย (Foreign Key)
 
-  roles        roles       @relation(fields: [roles_id], references: [roles_id], onDelete: Cascade)
-  menu_item    menu_items  @relation(fields: [menu_items_id], references: [menu_items_id], onDelete: Cascade)
+  roles        roles       @relation(fields: [roles_id], references: [roles_id], onDelete: Cascade)          // ความสัมพันธ์กับ roles
+  menu_item    menu_items  @relation(fields: [menu_items_id], references: [menu_items_id], onDelete: Cascade)  // ความสัมพันธ์กับเมนูย่อย
 
-  @@id([roles_id, menu_items_id])
+  @@id([roles_id, menu_items_id])                         // กำหนด composite primary key
 }
 
 model extensions {
-  extension_id      String   @id @default(uuid()) @db.Uuid
-  domain_id         String   @db.Uuid
-  user_id           String?  @db.Uuid
-  extension_number  String
-  voicemail_enabled Boolean  @default(false)
-  is_active         Boolean  @default(true)
-  call_forwarding   String?  // เบอร์ปลายทางถ้า forward
-  description       String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @default(now())
+  extension_id      String   @id @default(uuid()) @db.Uuid  // รหัส extension (Primary Key)
+  domain_id         String   @db.Uuid                       // รหัส domain ที่ extension นี้อยู่ (Foreign Key)
+  user_id           String?  @db.Uuid                       // รหัสผู้ใช้ที่ใช้ extension นี้ (ไม่บังคับ)
+  extension_number  String                                   // หมายเลข extension เช่น 100, 101
+  voicemail_enabled Boolean  @default(false)                 // เปิด/ปิด voicemail
+  is_active         Boolean  @default(true)                  // สถานะ extension เปิด/ปิดใช้งาน
+  call_forwarding   String?                                   // เบอร์ปลายทางถ้า forward call
+  description       String?                                   // คำอธิบายเพิ่มเติม
+  created_at        DateTime @default(now())                 // วันที่สร้าง extension
+  updated_at        DateTime @default(now())                 // วันที่แก้ไขล่าสุด
+  contact           contacts?   @relation                     // ความสัมพันธ์กับ contact (หนึ่งต่อหนึ่ง)
+  
+  @@unique([domain_id, extension_number])                    // ห้ามมี extension_number ซ้ำกันภายใน domain เดียวกัน
 
-  // unique constraint ระดับ domain + extension
-  @@unique([domain_id, extension_number])
+  domain domains @relation(fields: [domain_id], references: [domains_id], onDelete: Cascade)  // ความสัมพันธ์กับ domain
+}
 
-  // relation
-  domain domains  @relation(fields: [domain_id], references: [domains_id])
-  user   users?   @relation(fields: [user_id], references: [users_id])
+enum ContactType {
+  INTERNAL      // contact ภายใน (อาจเป็นพนักงาน)
+  EXTERNAL      // contact ภายนอก (ลูกค้า, เบอร์โทรอื่นๆ)
+}
+
+model contacts {
+  contact_id    String      @id @default(uuid()) @db.Uuid     // รหัส contact (Primary Key)
+  full_name     String                                         // ชื่อเต็ม contact
+  phone_number  String?                                        // เบอร์โทรศัพท์ (ไม่บังคับ)
+  contact_type ContactType @default(EXTERNAL)                  // ประเภท contact: INTERNAL หรือ EXTERNAL
+  extension_id  String?    @db.Uuid @unique                    // รหัส extension ที่ contact นี้ผูกกับ (ถ้ามี) ต้องไม่ซ้ำ (one-to-one)
+  
+  extension     extensions? @relation(fields: [extension_id], references: [extension_id], onDelete: SetNull) // ความสัมพันธ์กับ extension
+
+  created_at    DateTime    @default(now())                    // วันที่สร้าง contact
+  updated_at    DateTime    @default(now())                    // วันที่อัปเดต contact ล่าสุด
 }

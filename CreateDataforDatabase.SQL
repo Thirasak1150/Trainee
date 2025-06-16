@@ -41,7 +41,8 @@ VALUES
 INSERT INTO menu_headers (menu_headers_id, name_default, order_index)
 VALUES
   (gen_random_uuid(), 'Home', 1),
-  (gen_random_uuid(), 'Advance', 2);
+  (gen_random_uuid(), 'Advance', 2),
+  (gen_random_uuid(), 'Application', 3);
 
 -- ================================
 -- ✅ 6. เพิ่ม Menu Items
@@ -55,8 +56,10 @@ VALUES
   -- Advance
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Access Controls', '/advance/access-controls', 1, 'access-controls'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Domains', '/advance/domains', 2, 'domains'),
-  (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Menu Manager', '/advance/menu-manager', 3, 'menu-manager');
-
+  (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Menu Manager', '/advance/menu-manager', 3, 'menu-manager'),
+  -- Application
+  (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Application'), 'Contacts', '/application/contacts', 1, 'contacts');
+  
 -- ================================
 -- ✅ 7. Mapping Role ↔ Menu Headers
 -- ================================
@@ -127,7 +130,42 @@ VALUES
     now(),
     now()
   );
-
+-- ================================
+-- ✅ เพิ่มข้อมูล Contacts
+-- ================================
+INSERT INTO contacts (
+  contact_id,
+  full_name,
+  phone_number,
+  extension_id,
+  created_at,
+  updated_at
+)
+VALUES
+  (
+    gen_random_uuid(),
+    'John Doe',
+    '0812345678',
+    (SELECT extension_id FROM extensions WHERE extension_number = '1001' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com')),
+    now(),
+    now()
+  ),
+  (
+    gen_random_uuid(),
+    'Jane Admin',
+    '0823456789',
+    (SELECT extension_id FROM extensions WHERE extension_number = '1002' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com')),
+    now(),
+    now()
+  ),
+  (
+    gen_random_uuid(),
+    'Normal User Contact',
+    '0834567890',
+    (SELECT extension_id FROM extensions WHERE extension_number = '2001' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com')),
+    now(),
+    now()
+  );
 -- ================================
 -- 🎉 สำเร็จแล้ว!
 -- ================================
