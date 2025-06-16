@@ -67,26 +67,32 @@ const AccountSetting = () => {
     
   }
 
-  if (loading) {
-    return (
-      <LoadingaccountSetting/>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <LoadingaccountSetting/>
+  //   )
+  // }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex justify-center items-start px-6 lg:px-0 h-full pt-10 overflow-hidden"
     >
-      <Card className="w-full lg:max-w-2xl shadow-lg">
-        <CardHeader>
-          <CardTitle  className="text-2xl font-bold text-foreground">Account Settings</CardTitle>
-          <CardDescription>Update your profile information.</CardDescription>
-        </CardHeader>
-   <FormaccountSetting formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} isDirty={isDirty} />
-      </Card>
+      <motion.div
+     initial={{ opacity: 0 }}
+     animate={{ opacity: 1 }}
+     transition={{ duration: 0.5 }}
+        className="flex justify-center items-start px-6 lg:px-0 h-full pt-10 overflow-hidden"
+      >
+        <Card className="w-full lg:max-w-2xl shadow-lg">
+          <CardHeader>
+            <CardTitle  className="text-2xl font-bold text-foreground">Account Settings</CardTitle>
+            <CardDescription>Update your profile information.</CardDescription>
+          </CardHeader>
+          <FormaccountSetting formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} isDirty={isDirty} />
+        </Card>
+      </motion.div>
     </motion.div>
   )
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
+import { motion } from 'framer-motion';
 
 interface Role {
     roles_id: string;
@@ -171,7 +170,12 @@ const AccessControlsPage = () => {
 
 
     return (
-         <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
              <Card className="mb-6 shadow-md md:mx-0 mx-4">
                  <CardHeader className="px-4 sm:px-6">
                      <CardTitle className="text-xl sm:text-2xl font-bold text-center">Access Control Management</CardTitle>
@@ -296,6 +300,7 @@ const AccessControlsPage = () => {
                  </CardContent>
              </Card>
          </div>
+      </motion.div>
     );
 };
 

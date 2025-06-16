@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,6 +94,7 @@ const ContactsPage = () => {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [formData, setFormData] = useState(initialFormData);
   const [formErrors, setFormErrors] = useState({ full_name: '', domain_id: '', extension_id: '', phone_number: '' });
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -243,153 +245,165 @@ const ContactsPage = () => {
     return extensions.filter(ext => !linkedExtensionIds.has(ext.extension_id));
   }, [contacts, extensions, selectedContact]);
 
-  return (
-    <div className="container mx-auto p-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Contacts Management</CardTitle>
-          <div className="flex items-center gap-4">
-            <Select onValueChange={(value: 'ALL' | 'INTERNAL' | 'EXTERNAL') => setFilterType(value)} defaultValue="ALL">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Types</SelectItem>
-                <SelectItem value="INTERNAL">Internal</SelectItem>
-                <SelectItem value="EXTERNAL">External</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={() => openFormModal()}><IconPlus className="mr-2 h-4 w-4" /> Add Contact</Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow className="">
-                <TableHead >Full Name</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead>Type</TableHead>
-                {filterType !== 'EXTERNAL' && <TableHead>Extension</TableHead>}
-                {filterType !== 'EXTERNAL' && <TableHead>Domain</TableHead>}
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center">Loading...</TableCell></TableRow>
-              ) : contacts.length > 0 ? (
-                contacts.map(contact => (
-                  <TableRow key={contact.contact_id}>
-                    <TableCell>{contact.full_name}</TableCell>
-                    <TableCell>{contact.phone_number || '-'}</TableCell>
-                    <TableCell>{contact.contact_type}</TableCell>
-                    {filterType !== 'EXTERNAL' && <TableCell>{contact.extension_number || '-'}</TableCell>}
-                    {filterType !== 'EXTERNAL' && <TableCell>{contact.domain?.domain_name || '-'}</TableCell>}
-                    <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                            <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openFormModal(contact)}><IconEdit size={18} /></Button>
-                            <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteAlert(contact)}><IconTrash size={18} /></Button>
-                        </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow><TableCell colSpan={6} className="text-center">No contacts found.</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+  const filteredContacts = useMemo(() => contacts.filter(contact => contact.full_name.toLowerCase().includes(searchTerm.toLowerCase())), [contacts, searchTerm]);
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedContact ? 'Edit' : 'Add'} Contact</DialogTitle>
-            <DialogDescription>Fill in the details for the contact.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label className="mb-2" htmlFor="full_name">Full Name</Label>
-              <Input id="full_name" name="full_name" value={formData.full_name} onChange={handleInputChange} />
-              {formErrors.full_name && <p className="text-red-500 text-sm mt-1">{formErrors.full_name}</p>}
-            </div>
-            {formData.contact_type === 'EXTERNAL' && (
-              <div>
-                <Label className="mb-2" htmlFor="phone_number">Phone Number</Label>
-                <Input id="phone_number" name="phone_number" value={formData.phone_number} onChange={handleInputChange} />
-                {formErrors.phone_number && <p className="text-red-500 text-sm mt-1">{formErrors.phone_number}</p>}
-              </div>
-            )}
-            <div>
-              <Label className="mb-2" htmlFor="contact_type">Contact Type</Label>
-              <Select onValueChange={(value) => handleSelectChange('contact_type', value)} value={formData.contact_type}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="container mx-auto p-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Contacts Management</CardTitle>
+            <div className="flex items-center gap-4">
+              <Select onValueChange={(value: 'ALL' | 'INTERNAL' | 'EXTERNAL') => setFilterType(value)} defaultValue="ALL">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EXTERNAL">External</SelectItem>
+                  <SelectItem value="ALL">All Types</SelectItem>
                   <SelectItem value="INTERNAL">Internal</SelectItem>
+                  <SelectItem value="EXTERNAL">External</SelectItem>
                 </SelectContent>
               </Select>
+              <Button onClick={() => openFormModal()}><IconPlus className="mr-2 h-4 w-4" /> Add Contact</Button>
             </div>
-            {formData.contact_type === 'INTERNAL' && (
-              <div className="mb-4">
-                <Label className="mb-2" htmlFor="domain_id">Domain</Label>
-                <Select onValueChange={(value) => handleSelectChange('domain_id', value)} value={formData.domain_id}>
-                  <SelectTrigger><SelectValue placeholder="Select a domain" /></SelectTrigger>
-                  <SelectContent>
-                    {domains.map((d) => (
-                      <SelectItem key={d.domains_id} value={d.domains_id}>{d.domain_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formErrors.domain_id && <p className="text-red-500 text-sm mt-1">{formErrors.domain_id}</p>}
-              </div>
-            )}
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex flex-col  w-64 gap-4">
 
-            {formData.contact_type === 'INTERNAL' && formData.domain_id && (
+              <Input id="search-full-name" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="">
+                  <TableHead >Full Name</TableHead>
+                  <TableHead>Phone Number</TableHead>
+                  <TableHead>Type</TableHead>
+                  {filterType !== 'EXTERNAL' && <TableHead>Extension</TableHead>}
+                  {filterType !== 'EXTERNAL' && <TableHead>Domain</TableHead>}
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={6} className="text-center">Loading...</TableCell></TableRow>
+                ) : filteredContacts.length > 0 ? (
+                  filteredContacts.map(contact => (
+                    <TableRow key={contact.contact_id}>
+                      <TableCell>{contact.full_name}</TableCell>
+                      <TableCell>{contact.phone_number || '-'}</TableCell>
+                      <TableCell>{contact.contact_type}</TableCell>
+                      {filterType !== 'EXTERNAL' && <TableCell>{contact.extension_number || '-'}</TableCell>}
+                      {filterType !== 'EXTERNAL' && <TableCell>{contact.domain?.domain_name || '-'}</TableCell>}
+                      <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                              <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openFormModal(contact)}><IconEdit size={18} /></Button>
+                              <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteAlert(contact)}><IconTrash size={18} /></Button>
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow><TableCell colSpan={6} className="text-center">No contacts found.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        {/* Add/Edit Dialog */}
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{selectedContact ? 'Edit' : 'Add'} Contact</DialogTitle>
+              <DialogDescription>Fill in the details for the contact.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label className="mb-2" htmlFor="extension_id">Extension</Label>
-                <Select onValueChange={(value) => handleSelectChange('extension_id', value)} value={formData.extension_id}>
-                  <SelectTrigger><SelectValue placeholder="Select an extension" /></SelectTrigger>
+                <Label className="mb-2" htmlFor="full_name">Full Name</Label>
+                <Input id="full_name" name="full_name" value={formData.full_name} onChange={handleInputChange} />
+                {formErrors.full_name && <p className="text-red-500 text-sm mt-1">{formErrors.full_name}</p>}
+              </div>
+              {formData.contact_type === 'EXTERNAL' && (
+                <div>
+                  <Label className="mb-2" htmlFor="phone_number">Phone Number</Label>
+                  <Input id="phone_number" name="phone_number" value={formData.phone_number} onChange={handleInputChange} />
+                  {formErrors.phone_number && <p className="text-red-500 text-sm mt-1">{formErrors.phone_number}</p>}
+                </div>
+              )}
+              <div>
+                <Label className="mb-2" htmlFor="contact_type">Contact Type</Label>
+                <Select onValueChange={(value) => handleSelectChange('contact_type', value)} value={formData.contact_type}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {availableExtensions.length > 0 ? (
-                      availableExtensions.map(ext => (
-                        <SelectItem key={ext.extension_id} value={ext.extension_id}>
-                          {ext.extension_number} ({ext.domain.domain_name})
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <p className="p-2 text-sm text-muted-foreground">No available extensions.</p>
-                    )}
+                    <SelectItem value="EXTERNAL">External</SelectItem>
+                    <SelectItem value="INTERNAL">Internal</SelectItem>
                   </SelectContent>
                 </Select>
-                {formErrors.extension_id && <p className="text-red-500 text-sm mt-1">{formErrors.extension_id}</p>}
               </div>
-            )}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>
-              <Button type="submit">{selectedContact ? 'Save Changes' : 'Create Contact'}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              {formData.contact_type === 'INTERNAL' && (
+                <div className="mb-4">
+                  <Label className="mb-2" htmlFor="domain_id">Domain</Label>
+                  <Select onValueChange={(value) => handleSelectChange('domain_id', value)} value={formData.domain_id}>
+                    <SelectTrigger><SelectValue placeholder="Select a domain" /></SelectTrigger>
+                    <SelectContent>
+                      {domains.map((d) => (
+                        <SelectItem key={d.domains_id} value={d.domains_id}>{d.domain_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formErrors.domain_id && <p className="text-red-500 text-sm mt-1">{formErrors.domain_id}</p>}
+                </div>
+              )}
 
-      {/* Delete Alert Dialog */}
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the contact "{selectedContact?.full_name}".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+              {formData.contact_type === 'INTERNAL' && formData.domain_id && (
+                <div>
+                  <Label className="mb-2" htmlFor="extension_id">Extension</Label>
+                  <Select onValueChange={(value) => handleSelectChange('extension_id', value)} value={formData.extension_id}>
+                    <SelectTrigger><SelectValue placeholder="Select an extension" /></SelectTrigger>
+                    <SelectContent>
+                      {availableExtensions.length > 0 ? (
+                        availableExtensions.map(ext => (
+                          <SelectItem key={ext.extension_id} value={ext.extension_id}>
+                            {ext.extension_number} ({ext.domain.domain_name})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <p className="p-2 text-sm text-muted-foreground">No available extensions.</p>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {formErrors.extension_id && <p className="text-red-500 text-sm mt-1">{formErrors.extension_id}</p>}
+                </div>
+              )}
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>
+                <Button type="submit">{selectedContact ? 'Save Changes' : 'Create Contact'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Alert Dialog */}
+        <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the contact "{selectedContact?.full_name}".
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </motion.div>
   );
 };
 

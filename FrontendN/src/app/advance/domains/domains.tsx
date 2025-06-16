@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
+import { motion } from 'framer-motion';
 interface Domain {
     domains_id: string;
     domain_name: string;
@@ -183,137 +183,143 @@ const DomainsPage = () => {
     }
 
     return (
-        <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
-            <Card className="mb-6 shadow-md md:mx-0 mx-4">
-                <CardHeader className="px-4 sm:px-6">
-                    <CardTitle className="text-xl sm:text-2xl font-bold text-center">Domain Management</CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                    <div className="flex flex-row justify-between items-center gap-2 sm:gap-3">
-                        <div className="flex-1 md:flex-none">
-                            <Label htmlFor="search" className="sr-only">Search Domains</Label>
-                            <Input
-                                id="search"
-                                placeholder="Search domains..."
-                                className="w-full"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
+            <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
+                <Card className="mb-6 shadow-md md:mx-0 mx-4">
+                    <CardHeader className="px-4 sm:px-6">
+                        <CardTitle className="text-xl sm:text-2xl font-bold text-center">Domain Management</CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 sm:px-6">
+                        <div className="flex flex-row justify-between items-center gap-2 sm:gap-3">
+                            <div className="flex-1 md:flex-none">
+                                <Label htmlFor="search" className="sr-only">Search Domains</Label>
+                                <Input
+                                    id="search"
+                                    placeholder="Search domains..."
+                                    className="w-full"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Dialog open={openDialog} onOpenChange={(isOpen) => {
+                                setOpenDialog(isOpen);
+                                if (!isOpen) {
+                                    setEditingDomain(null);
+                                }
+                            }}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm" className="flex-shrink-0" onClick={() => setNewDomain({ domain_name: '', enable: true })}>Add Domain</Button>
+                                </DialogTrigger>
+                                <DialogContent className="w-[95%] sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>{editingDomain ? "Edit Domain" : "Add New Domain"}</DialogTitle>
+                                    </DialogHeader>
+                                    <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
+                                        <div>
+                                            <Label className=' mb-2' htmlFor="domain_name">Domain Name</Label>
+                                            <Input
+                                                id="domain_name"
+                                                value={editingDomain ? editingDomain.domain_name : newDomain.domain_name}
+                                                onChange={(e) => editingDomain ? setEditingDomain({ ...editingDomain, domain_name: e.target.value }) : setNewDomain({ ...newDomain, domain_name: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                          <Label htmlFor="domain_enabled">Status</Label>
+                                          <Switch
+                                            id="domain_enabled"
+                                            checked={editingDomain ? editingDomain.enable : newDomain.enable}
+                                            onCheckedChange={(checked) => editingDomain ? setEditingDomain({ ...editingDomain, enable: checked }) : setNewDomain({ ...newDomain, enable: checked })}
+                                          />
+                                        </div>
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button type="button" variant="outline">Cancel</Button>
+                                            </DialogClose>
+                                            <Button type="submit">{editingDomain ? "Update Domain" : "Add Domain"}</Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
                         </div>
-                        <Dialog open={openDialog} onOpenChange={(isOpen) => {
-                            setOpenDialog(isOpen);
-                            if (!isOpen) {
-                                setEditingDomain(null);
-                            }
-                        }}>
-                            <DialogTrigger asChild>
-                                <Button size="sm" className="flex-shrink-0" onClick={() => setNewDomain({ domain_name: '', enable: true })}>Add Domain</Button>
-                            </DialogTrigger>
-                            <DialogContent className="w-[95%] sm:max-w-md">
-                                <DialogHeader>
-                                    <DialogTitle>{editingDomain ? "Edit Domain" : "Add New Domain"}</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
-                                    <div>
-                                        <Label className=' mb-2' htmlFor="domain_name">Domain Name</Label>
-                                        <Input
-                                            id="domain_name"
-                                            value={editingDomain ? editingDomain.domain_name : newDomain.domain_name}
-                                            onChange={(e) => editingDomain ? setEditingDomain({ ...editingDomain, domain_name: e.target.value }) : setNewDomain({ ...newDomain, domain_name: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                      <Label htmlFor="domain_enabled">Status</Label>
-                                      <Switch
-                                        id="domain_enabled"
-                                        checked={editingDomain ? editingDomain.enable : newDomain.enable}
-                                        onCheckedChange={(checked) => editingDomain ? setEditingDomain({ ...editingDomain, enable: checked }) : setNewDomain({ ...newDomain, enable: checked })}
-                                      />
-                                    </div>
-                                    <DialogFooter>
-                                        <DialogClose asChild>
-                                            <Button type="button" variant="outline">Cancel</Button>
-                                        </DialogClose>
-                                        <Button type="submit">{editingDomain ? "Update Domain" : "Add Domain"}</Button>
-                                    </DialogFooter>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
 
-            <Card className="shadow-md md:mx-0 mx-4">
-                <CardHeader className="px-4 sm:px-6">
-                    <CardTitle className="text-lg sm:text-xl font-semibold">Domains List</CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 sm:px-6">
-                    {domains.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500 text-sm sm:text-base">
-                            No domains found.
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Domain Name</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {domains.map((domain) => (
-                                        <TableRow key={domain.domains_id}>
-                                            <TableCell className="font-medium">{domain.domain_name}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`h-3 w-3 rounded-full ${domain.enable ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                    <span>{domain.enable ? 'Enabled' : 'Disabled'}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className=' flex gap-2 justify-end'>
-                                                    <Button  variant="default" size="icon" className="hover:text-yellow-400" onClick={() => {
-                                                        setEditingDomain(domain);
-                                                        setOpenDialog(true);
-                                                    }}>
-                                                        <PenBox className="hover:text-yellow-400" />
-                                                    </Button>
-                                                    <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent className="w-[95%] sm:max-w-sm">
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This action cannot be undone. This will permanently delete the domain
-                                                                <span className='font-bold'> &quot;{domain.domain_name}&quot; </span>.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDeleteDomain(domain.domains_id)}>Continue</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                                </div>
-                                            
-                                          
-                                            </TableCell>
+                <Card className="shadow-md md:mx-0 mx-4">
+                    <CardHeader className="px-4 sm:px-6">
+                        <CardTitle className="text-lg sm:text-xl font-semibold">Domains List</CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 sm:px-6">
+                        {domains.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500 text-sm sm:text-base">
+                                No domains found.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Domain Name</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {domains.map((domain) => (
+                                            <TableRow key={domain.domains_id}>
+                                                <TableCell className="font-medium">{domain.domain_name}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`h-3 w-3 rounded-full ${domain.enable ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                        <span>{domain.enable ? 'Enabled' : 'Disabled'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className=' flex gap-2 justify-end'>
+                                                        <Button  variant="default" size="icon" className="hover:text-yellow-400" onClick={() => {
+                                                            setEditingDomain(domain);
+                                                            setOpenDialog(true);
+                                                        }}>
+                                                            <PenBox className="hover:text-yellow-400" />
+                                                        </Button>
+                                                        <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700">
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent className="w-[95%] sm:max-w-sm">
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action cannot be undone. This will permanently delete the domain
+                                                                    <span className='font-bold'> &quot;{domain.domain_name}&quot; </span>.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDeleteDomain(domain.domains_id)}>Continue</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                    </div>
+                                                
+                                              
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </motion.div>
     );
 };
 

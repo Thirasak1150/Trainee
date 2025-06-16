@@ -51,7 +51,7 @@ const AddAccountDialog: React.FC<AddAccountDialogProps> = ({
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <Label htmlFor="username" className="font-semibold">
+                <Label htmlFor="username" className="mt-4 font-semibold">
                   Username
                 </Label>
                 <Input
@@ -64,7 +64,7 @@ const AddAccountDialog: React.FC<AddAccountDialogProps> = ({
                 />
               </div>
               <div>
-                <Label htmlFor="email" className="font-semibold">
+                <Label  htmlFor="email" className="mt-4 font-semibold">
                   Email
                 </Label>
                 <Input
@@ -77,7 +77,7 @@ const AddAccountDialog: React.FC<AddAccountDialogProps> = ({
               </div>
             </div>
             <div>
-              <Label htmlFor="role" className="font-semibold">
+              <Label htmlFor="role" className="mt-4 font-semibold">
                 Role
               </Label>
               <Select
