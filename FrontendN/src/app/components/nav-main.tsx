@@ -1,6 +1,6 @@
 "use client"
 
-import { usePathname, useRouter } from 'next/navigation';
+
 import { useThemeConfig } from "@/components/ui/active-theme";
 import { type Icon } from "@tabler/icons-react"
 import {
@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 
@@ -23,10 +24,12 @@ export function NavMain({
     icon?: Icon;
   }[];
 }) {
-  const currentPath = usePathname();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const { activeTheme } = useThemeConfig();
   
-  const router = useRouter();
+  const navigate = useNavigate();
 
   function getActiveClass(theme: string) {
     switch (theme) {
@@ -63,7 +66,7 @@ export function NavMain({
               <SidebarMenuButton
                 tooltip={item.title}
                 className={`  ${currentPath.startsWith(item.url) && item.url !== "#" ? getActiveClass(activeTheme) : ""}`}
-                onClick={() => router.push(item.url)}
+                onClick={() => navigate(item.url)}
                 asChild
               >
                 <div > {/* Make the button a link */}

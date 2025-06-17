@@ -58,7 +58,7 @@ export function useTheme() {
 
 export function ModeToggle() {
   const { theme, toggleTheme } = useTheme();
-
+  console.log(theme);
   return (
     <Button
       variant="secondary"

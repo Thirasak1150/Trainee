@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
-import React from 'react'
 
 const loadingaccountSetting = () => {
   return (

@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./CreateDataforDatabase.SQL:/docker-entrypoint-initdb.d/01-init.sql
     networks:
       - trainee-network
     restart: unless-stopped
@@ -33,24 +34,7 @@ services:
       - trainee-network
     restart: unless-stopped
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: Trainee-frontend
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - WATCHPACK_POLLING=true
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - trainee-network
-    restart: unless-stopped
+  
 
 networks:
   trainee-network:

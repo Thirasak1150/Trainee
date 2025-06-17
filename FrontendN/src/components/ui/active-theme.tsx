@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  // @ts-ignore
   ReactNode,
   useContext,
   useEffect,

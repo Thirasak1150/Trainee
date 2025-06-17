@@ -25,7 +25,7 @@ const App = () => {
     // The handleLogin service now manages setting cookies and redirection.
    const result = await handleLogin(username, password, setError, dispatch);
    if (result) {
-    
+    console.log('Login successful');
     navigate('/home/accounts');
     } 
     } catch (error) {

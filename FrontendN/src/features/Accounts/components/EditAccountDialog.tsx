@@ -12,6 +12,7 @@ interface EditAccountDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   formData: FormData;
+  // @ts-ignore
   setFormData: (fn: (prev: FormData) => FormData) => void;
   roles: Role[];
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;

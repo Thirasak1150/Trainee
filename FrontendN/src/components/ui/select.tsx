@@ -44,7 +44,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <FaChevronDown className="size-4 opacity-50" />
+        <FaChevronDown size={16} />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -112,7 +112,7 @@ const SelectItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <FaCheck className="h-4 w-4" />
+        <FaCheck size={16} />
       </SelectPrimitive.ItemIndicator>
     </span>
 
@@ -145,7 +145,7 @@ const SelectScrollUpButton = React.forwardRef<
     )}
     {...props}
   >
-    <FaChevronUp className="h-4 w-4" />
+    <FaChevronUp size={16} />
   </SelectPrimitive.ScrollUpButton>
 ))
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
@@ -162,7 +162,7 @@ const SelectScrollDownButton = React.forwardRef<
     )}
     {...props}
   >
-    <FaChevronDown className="h-4 w-4" />
+    <FaChevronDown size={16} />
   </SelectPrimitive.ScrollDownButton>
 ))
 SelectScrollDownButton.displayName =

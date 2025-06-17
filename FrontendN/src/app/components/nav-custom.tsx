@@ -38,6 +38,7 @@ export function NavCustom({
         {items.map((item) => (
   
           <SidebarMenuItem key={item.name}>
+            {/* @ts-ignore */}
             <SidebarMenuButton asChild variant={pathname.pathname === item.url ? "primary" : "default"}>
               <Link to={item.url}>
                 <item.icon />

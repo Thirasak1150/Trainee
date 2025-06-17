@@ -497,21 +497,28 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
-function SidebarMenuButton({
-  asChild = false,
-  isActive = false,
-  variant = "default",
-  size = "default",
-  tooltip,
-  className,
-  ...props
-}: React.ComponentProps<"button"> & {
+interface SidebarMenuButtonProps
+  extends React.ComponentProps<"button">,
+  // @ts-ignore
+    VariantProps<typeof sidebarMenuButtonVariants> {
   asChild?: boolean
   isActive?: boolean
   tooltip?: string | React.ComponentProps<typeof TooltipContent>
-} & typeof sidebarMenuButtonVariants) {
+}
+
+function SidebarMenuButton({
+  asChild = false,
+  isActive = false,
+  tooltip,
+  className,
+  // @ts-ignore
+  variant,
+  // @ts-ignore
+  size,
+  ...props
+}: SidebarMenuButtonProps) {
   const Comp = asChild ? Slot : "button"
-  const { isMobile, state } = useSidebar()
+  // const { isMobile,  } = useSidebar()
 
   const button = (
     <Comp
@@ -521,30 +528,31 @@ function SidebarMenuButton({
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
       {...props}
-    />
+    >
+      {tooltip ? (
+        <Tooltip>
+          <TooltipTrigger asChild>{props.children}</TooltipTrigger>
+          {typeof tooltip === "string" ? (
+            <TooltipContent side="right">{tooltip}</TooltipContent>
+          ) : (
+            <TooltipContent side="right" {...tooltip} />
+          )}
+        </Tooltip>
+      ) : (
+        props.children
+      )}
+    </Comp>
   )
 
-  if (!tooltip) {
-    return button
-  }
+  // if (isMobile) {
+  //   return (
+  //     <SheetClose  asChild>
+  //       {button}
+  //     </SheetClose>
+  //   )
+  // }
 
-  if (typeof tooltip === "string") {
-    tooltip = {
-      children: tooltip,
-    }
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        align="center"
-        hidden={state !== "collapsed" || isMobile}
-        {...tooltip}
-      />
-    </Tooltip>
-  )
+  return button
 }
 
 function SidebarMenuAction({

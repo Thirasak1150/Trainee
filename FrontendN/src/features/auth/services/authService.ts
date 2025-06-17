@@ -5,7 +5,6 @@ import {
   setUserRole,
   setUserUuid,
   setFullName,
-  setMenu,
 } from "@/Store/userSlice";
 import { type AppDispatch } from "@/Store/store"
 export const handleLogin = async (

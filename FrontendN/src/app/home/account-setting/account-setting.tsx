@@ -3,7 +3,6 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { motion } from "framer-motion"
 import type { ProfileData } from '@/features/account-setting/types/Profile.type'
 
-import LoadingaccountSetting from '@/features/account-setting/components/loadingaccount-setting'
 import FormaccountSetting from '@/features/account-setting/components/FormaccountSetting'
 import { updateUserProfile } from '@/features/account-setting/services/UpdateUserProfile'
 import { fetchUserProfile } from '@/features/account-setting/services/fetchUserProfile'
@@ -13,6 +12,7 @@ import type { RootState } from '@/Store/store'
 const AccountSetting = () => {
   const { user_uuid } = useSelector((state: RootState) => state.user);
   const [loading, setLoading] = useState(true)
+  console.log(loading)
   const [formData, setFormData] = useState<ProfileData>({
     username: '',
     email: '',

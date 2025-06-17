@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import { useMemo } from "react"
 import { useThemeConfig } from "@/components/ui/active-theme"
 import { Label } from "@/components/ui/label"
 import {

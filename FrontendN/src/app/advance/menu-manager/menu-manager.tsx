@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Shield, Crown, Loader2, Pencil, Check, X, RefreshCw } from 'lucide-react';
@@ -30,7 +30,7 @@ import { motion } from 'framer-motion';
 const API_BASE_URL = 'http://localhost:8000/api';
 
 const apiService = {
-  getRoles: () => axios.get(`${API_BASE_URL}/roles`),
+  getRoles: () => axios.get(`${API_BASE_URL}/roles/`),
   getMenusForRole: (roleId: string) => axios.get(`${API_BASE_URL}/menu/role/${roleId}`),
   updateMenuName: (type: 'header' | 'item', id: string, name: string) => axios.put(`${API_BASE_URL}/menu/name/${type}/${id}`, { name }),
   resetAllMenuNames: () => axios.post(`${API_BASE_URL}/menu/reset-names`),

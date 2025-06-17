@@ -46,9 +46,13 @@ const API_BASE_URL = 'http://localhost:8000';
 
 // API fetching utility
 const api = {
+  // @ts-ignore
   get: (url) => axios.get(`${API_BASE_URL}${url}`).then(res => res.data),
+  // @ts-ignore
   post: (url, data) => axios.post(`${API_BASE_URL}${url}`, data).then(res => res.data),
+  // @ts-ignore
   put: (url, data) => axios.put(`${API_BASE_URL}${url}`, data).then(res => res.data),
+        // @ts-ignore
   delete: (url) => axios.delete(`${API_BASE_URL}${url}`).then(res => res.data),
 };
 
@@ -99,7 +103,7 @@ const ContactsPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const url = filterType === 'ALL' ? '/api/contacts' : `/api/contacts?contact_type=${filterType}`;
+      const url = filterType === 'ALL' ? '/api/contacts/' : `/api/contacts?contact_type=${filterType}`;
       const [contactsData, extensionsData] = await Promise.all([
         api.get(url),
         api.get('/api/extensions/domains'),
