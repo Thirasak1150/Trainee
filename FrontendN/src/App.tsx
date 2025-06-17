@@ -3,6 +3,9 @@ import type { FormEvent } from 'react';
 import './App.css'
 import { User, Lock, ArrowRight, Loader2 } from 'lucide-react'; // Added Loader2 for loading state
 import { handleLogin } from './features/auth/services/authService';
+import { useDispatch } from "react-redux";
+import { type AppDispatch } from "./Store/store";
+import { useNavigate } from 'react-router-dom';
 
 
 const App = () => {
@@ -10,7 +13,8 @@ const App = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const dispatch: AppDispatch = useDispatch();
+  const navigate = useNavigate();
   
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -19,11 +23,16 @@ const App = () => {
     try {
       
     // The handleLogin service now manages setting cookies and redirection.
-    await handleLogin(username, password, setError);
-
+   const result = await handleLogin(username, password, setError, dispatch);
+   if (result) {
+    
+    navigate('/home/accounts');
+    } 
+    } catch (error) {
+      console.error('Login failed:', error);
+      setError('Login failed. Please try again.');
     } finally {
- 
-   
+      setIsLoading(false);
     }
   };
 

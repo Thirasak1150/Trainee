@@ -187,7 +187,7 @@ const MenuManagerPage = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
         <h1 className="text-2xl font-bold mb-4 text-center text-foreground">Menu Access Management</h1>
         <p className="text-muted-foreground text-center mb-8">Select a Role to view and manage its menu access rights.</p>
         

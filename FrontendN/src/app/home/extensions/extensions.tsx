@@ -282,7 +282,7 @@ const ExtensionsPage = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            <div className="container mx-auto p-4">
+            <div className="    container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
                 <Card className='bg-background/80 backdrop-blur-sm border-border/40 shadow-lg'>
                     <CardHeader>
                         <div className="flex justify-between items-center">

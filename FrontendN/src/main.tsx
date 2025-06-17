@@ -19,10 +19,11 @@ import AccessControlsPage from './app/advance/access-controls/access-controls';
 import MenuManagerPage from './app/advance/menu-manager/menu-manager';
 import ContactsPage from './app/application/contacts/contacts';
 // import Dashborad from './app/Dashborad/Dashborad';
-
+import { Provider } from 'react-redux';
+import { store } from './Store/store';
 const router = createBrowserRouter([
   {
-    path: "/testpage",
+    path: "/",
     element: (
       <ClientLayoutWrapper>
         <App />
@@ -96,8 +97,8 @@ const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Failed to find the root element');
 }
-
 createRoot(rootElement).render(
+  <Provider store={store}>
     <ThemeProvider>
       <ActiveThemeProvider>
         <RouterProvider router={router} />
@@ -115,9 +116,8 @@ createRoot(rootElement).render(
           theme="light"
           transition={Zoom}
         />
-        {/* เพิ่ม Toaster ของ sonner ให้ toast แสดงผลได้ */}
         <Toaster richColors position="bottom-right" />
       </ActiveThemeProvider>
     </ThemeProvider>
- 
+  </Provider>
 );

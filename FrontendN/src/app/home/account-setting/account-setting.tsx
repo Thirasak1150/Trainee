@@ -7,9 +7,11 @@ import LoadingaccountSetting from '@/features/account-setting/components/loading
 import FormaccountSetting from '@/features/account-setting/components/FormaccountSetting'
 import { updateUserProfile } from '@/features/account-setting/services/UpdateUserProfile'
 import { fetchUserProfile } from '@/features/account-setting/services/fetchUserProfile'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/Store/store'
 
 const AccountSetting = () => {
-  const  user_uuid  = 'c075f370-8d11-4d70-b6d7-9cdc44e9f72b'
+  const { user_uuid } = useSelector((state: RootState) => state.user);
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState<ProfileData>({
     username: '',

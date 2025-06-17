@@ -27,8 +27,10 @@ interface Domain {
     enable: boolean;
 }
 import "./style.css"
+import type { RootState } from '@/Store/store';
+import { useSelector } from 'react-redux';
 const DomainsPage = () => {
-    const user_uuid = 'c075f370-8d11-4d70-b6d7-9cdc44e9f72b'
+    const { user_uuid } = useSelector((state: RootState) => state.user);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [allDomains, setAllDomains] = useState<Domain[]>([]);
     const [loading, setLoading] = useState(true);

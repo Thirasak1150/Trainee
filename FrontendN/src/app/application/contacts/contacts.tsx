@@ -253,11 +253,23 @@ const ContactsPage = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="container mx-auto p-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Contacts Management</CardTitle>
-            <div className="flex items-center gap-4">
+      <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
+        <Card className="mb-6 shadow-md md:mx-0 mx-4">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">Contacts Management</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="flex flex-row justify-between items-center gap-2 sm:gap-3">
+              <div className="flex-1 md:flex-none">
+                <Label htmlFor="search" className="sr-only">Search Contacts</Label>
+                <Input
+                  id="search"
+                  placeholder="Search contacts..."
+                  className="w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
               <Select onValueChange={(value: 'ALL' | 'INTERNAL' | 'EXTERNAL') => setFilterType(value)} defaultValue="ALL">
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by type" />
@@ -268,55 +280,93 @@ const ContactsPage = () => {
                   <SelectItem value="EXTERNAL">External</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => openFormModal()}><IconPlus className="mr-2 h-4 w-4" /> Add Contact</Button>
+              <Button size="sm" className="flex-shrink-0" onClick={() => openFormModal()}><IconPlus className="mr-2 h-4 w-4" /> Add Contact</Button>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 flex flex-col  w-64 gap-4">
+          </CardContent>
+        </Card>
 
-              <Input id="search-full-name" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="">
-                  <TableHead >Full Name</TableHead>
-                  <TableHead>Phone Number</TableHead>
-                  <TableHead>Type</TableHead>
-                  {filterType !== 'EXTERNAL' && <TableHead>Extension</TableHead>}
-                  {filterType !== 'EXTERNAL' && <TableHead>Domain</TableHead>}
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow><TableCell colSpan={6} className="text-center">Loading...</TableCell></TableRow>
-                ) : filteredContacts.length > 0 ? (
-                  filteredContacts.map(contact => (
-                    <TableRow key={contact.contact_id}>
-                      <TableCell>{contact.full_name}</TableCell>
-                      <TableCell>{contact.phone_number || '-'}</TableCell>
-                      <TableCell>{contact.contact_type}</TableCell>
-                      {filterType !== 'EXTERNAL' && <TableCell>{contact.extension_number || '-'}</TableCell>}
-                      {filterType !== 'EXTERNAL' && <TableCell>{contact.domain?.domain_name || '-'}</TableCell>}
-                      <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                              <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openFormModal(contact)}><IconEdit size={18} /></Button>
-                              <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteAlert(contact)}><IconTrash size={18} /></Button>
-                          </div>
-                      </TableCell>
+        <Card className="shadow-md md:mx-0 mx-4">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-lg sm:text-xl font-semibold">Contacts List</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            {loading ? (
+              <div className="text-center py-8 text-gray-500 text-sm sm:text-base">Loading contacts...</div>
+            ) : filteredContacts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 text-sm sm:text-base">No contacts found.</div>
+            ) : (
+              <div className="overflow-x-auto hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Full Name</TableHead>
+                      <TableHead>Phone Number</TableHead>
+                      <TableHead>Type</TableHead>
+                      {filterType !== 'EXTERNAL' && <TableHead>Extension</TableHead>}
+                      {filterType !== 'EXTERNAL' && <TableHead>Domain</TableHead>}
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow><TableCell colSpan={6} className="text-center">No contacts found.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredContacts.map(contact => (
+                      <TableRow key={contact.contact_id}>
+                        <TableCell className="font-medium">{contact.full_name}</TableCell>
+                        <TableCell>{contact.phone_number || '-'}</TableCell>
+                        <TableCell>{contact.contact_type}</TableCell>
+                        {filterType !== 'EXTERNAL' && <TableCell>{contact.extension_number || '-'}</TableCell>}
+                        {filterType !== 'EXTERNAL' && <TableCell>{contact.domain?.domain_name || '-'}</TableCell>}
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openFormModal(contact)}><IconEdit size={18} /></Button>
+                            <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteAlert(contact)}><IconTrash size={18} /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            {/* Mobile View (Cards) */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+              {filteredContacts.map(contact => (
+                <Card key={contact.contact_id} className="shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="font-semibold">Full Name:</div>
+                      <div>{contact.full_name}</div>
+
+                      <div className="font-semibold">Phone:</div>
+                      <div>{contact.phone_number || '-'}</div>
+
+                      <div className="font-semibold">Type:</div>
+                      <div>{contact.contact_type}</div>
+
+                      {contact.contact_type === 'INTERNAL' && (
+                        <>
+                          <div className="font-semibold">Extension:</div>
+                          <div>{contact.extension_number || '-'}</div>
+
+                          <div className="font-semibold">Domain:</div>
+                          <div>{contact.domain?.domain_name || '-'}</div>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex justify-end gap-2 mt-4">
+                      <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openFormModal(contact)}><IconEdit size={18} /></Button>
+                      <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteAlert(contact)}><IconTrash size={18} /></Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
         {/* Add/Edit Dialog */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-xl max-w-full">
             <DialogHeader>
               <DialogTitle>{selectedContact ? 'Edit' : 'Add'} Contact</DialogTitle>
               <DialogDescription>Fill in the details for the contact.</DialogDescription>

@@ -22,6 +22,8 @@ import axios from "axios";
 import { NavCustom } from "./nav-custom";
 import { getCookie } from "./get-cookie";
 import {Link} from "react-router-dom"
+import { useSelector } from "react-redux";
+import type { RootState } from "@/Store/store";
 type MenuItem = {
   name: string;
   url: string;
@@ -39,9 +41,9 @@ export type MenuHeader = {
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   //จำลองข้อมูล
-  const user_uuid = "c075f370-8d11-4d70-b6d7-9cdc44e9f72b"
-  const Fullname = "สมชาย สมสันต์"
-  const Useremail = "samson@tecnomic.co.th"
+  const { user_uuid, fullName, userEmail } = useSelector((state: RootState) => state.user);
+  const Fullname = fullName
+  const Useremail = userEmail
   const [menu, setMenu] = React.useState<MenuHeader[]>([])
   const [isLoading, setIsLoading] = React.useState(false);
   const [menuHeaders, setMenuHeaders] = React.useState<MenuHeader[]>([]);
