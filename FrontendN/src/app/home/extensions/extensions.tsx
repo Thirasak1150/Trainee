@@ -60,7 +60,7 @@ const ExtensionsPage = () => {
     // Fetch all domains
     const fetchDomains = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/domain/');
+            const response = await axios.get('http://192.168.1.126:8000/api/domain/');
             console.log("Domains:", response.data);
             setDomains(response.data);
         } catch (error) {
@@ -74,7 +74,7 @@ const ExtensionsPage = () => {
         if (!domainId) return;
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:8000/api/extensions/domain/${domainId}`);
+            const response = await axios.get(`http://192.168.1.126:8000/api/extensions/domain/${domainId}`);
             console.log("Extensions:", response.data);  
             setExtensions(response.data);
         } catch (error) {
@@ -155,7 +155,7 @@ const ExtensionsPage = () => {
                         };
                         console.log('Creating extension:', extensionData);
                         
-                        await axios.post('http://localhost:8000/api/extensions', extensionData);
+                        await axios.post('http://192.168.1.126:8000/api/extensions', extensionData);
                         successCount++;
                         console.log(`Successfully created extension ${i}`);
                     } catch (error) {
@@ -188,7 +188,7 @@ const ExtensionsPage = () => {
                 const loadingToast = toast.loading('Creating extension...');
 
                 try {
-                    const response = await axios.post('http://localhost:8000/api/extensions', {
+                    const response = await axios.post('http://192.168.1.126:8000/api/extensions', {
                         extension_number: newExtensionData.extension_number,
                         domain_id: newExtensionData.domain_id,
                         voicemail_enabled: newExtensionData.voicemail_enabled,
@@ -239,7 +239,7 @@ const ExtensionsPage = () => {
         if (!currentExtension) return;
         console.log("currentExtension", currentExtension);
         try {
-            await axios.put(`http://localhost:8000/api/extensions/${currentExtension.extension_id}`, {
+            await axios.put(`http://192.168.1.126:8000/api/extensions/${currentExtension.extension_id}`, {
                 extension_number: currentExtension.extension_number,
                 description: currentExtension.description,
                 is_active: currentExtension.is_active,
@@ -256,7 +256,7 @@ const ExtensionsPage = () => {
     const handleDeleteExtension = async () => {
         if (!currentExtension) return;
         try {
-            await axios.delete(`http://localhost:8000/api/extensions/${currentExtension.extension_id}`);
+            await axios.delete(`http://192.168.1.126:8000/api/extensions/${currentExtension.extension_id}`);
             toast.success('Extension deleted successfully!');
             setDeleteDialogOpen(false);
             fetchExtensions(selectedDomain);

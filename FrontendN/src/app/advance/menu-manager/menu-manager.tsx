@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
 // --- API Service ---
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://192.168.1.126:8000/api';
 
 const apiService = {
   getRoles: () => axios.get(`${API_BASE_URL}/roles/`),

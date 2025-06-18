@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { toast } from 'sonner';
 import type { FormData } from '../types/Formdata';
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://192.168.1.126:8000';
 
 export const addAcount = async (addFormData: FormData, setOpenDialog: (open: boolean) => void, fetchData: () => void,setAddFormData: (formData: FormData) => void) => {
     try {

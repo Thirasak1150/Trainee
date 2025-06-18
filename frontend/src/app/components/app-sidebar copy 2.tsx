@@ -68,7 +68,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const fetchMenus = React.useCallback(async (user_uuid: string) => {
     console.log("user_uuid", user_id);
     try {
-      const response = await axios.get(`http://localhost:8000/api/menu/${user_id}`);
+      const response = await axios.get(`http://192.168.1.126:8000/api/menu/${user_id}`);
       console.log("response", response.data.length);
       if (response.data.length == 0 || response.data.length == undefined) {
         console.log("No data returned");

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Account, FormData } from '../../Accounts/types/Formdata';
 import { toast } from 'sonner';
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://192.168.1.126:8000';
 
 
 export const editAccount = async (editingAccount: Account, formData: FormData, setOpenEditDialog: (open: boolean) => void, fetchData: () => void) => {

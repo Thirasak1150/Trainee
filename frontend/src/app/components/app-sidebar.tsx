@@ -70,7 +70,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     // ใส่ดีเลย์ 2 วินาที
     await new Promise(resolve => setTimeout(resolve, 100));
     try {
-      const response = await axios.get(`http://localhost:8000/api/menu/${user_uuid}`);
+      const response = await axios.get(`http://192.168.1.126:8000/api/menu/${user_uuid}`);
       console.log("response", response.data.length);
       if (!response.data?.length) {
         console.log("No data returned");

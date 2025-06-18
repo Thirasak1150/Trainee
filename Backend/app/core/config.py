@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
 
    # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:Plankton273855@localhost:5432/fusionpbx")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:Plankton273855@192.168.1.126:5432/fusionpbx")
     
     # CORS
     CORS_ORIGINS: List[str] = ["*"]

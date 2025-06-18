@@ -42,7 +42,7 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://192.168.1.126:8000';
 
 // API fetching utility
 const api = {
