@@ -21,6 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
+import { useNavigate } from "react-router-dom";
 
 export function NavUser({
   user,
@@ -33,11 +34,15 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
 
+  const navigator =  useNavigate();
   const handleLogout = () => {
     console.log("logout");
+    navigator("/");
     // logout();
   }
- 
+  const handleProfile = () => {
+    navigator("/home/account-setting");
+  }
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -85,10 +90,12 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              <button className="w-full" onClick={handleProfile}>
               <DropdownMenuItem>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
+              </button>
               <button className="w-full" onClick={handleLogout}>
               <DropdownMenuItem>
                 <IconLogout />
