@@ -2,8 +2,7 @@ import axios from 'axios';
 
 import { toast } from 'sonner';
 import type { Account } from '../types/Formdata';
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://192.168.1.126:8000';
-
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
 export const deleteAccount = async (deletingAccount: Account, fetchData: () => void,setDeletingAccount: (deletingAccount: Account | null) => void) => {
     if (!deletingAccount) return
 

@@ -28,6 +28,8 @@ interface Role {
 }
 
 const AccessControlsPage = () => {
+    const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
+    
     const [roles, setRoles] = useState<Role[]>([]);
     const [allRoles, setAllRoles] = useState<Role[]>([]);
     const [loading, setLoading] = useState(true);
@@ -38,14 +40,10 @@ const AccessControlsPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
 
 
-    const api = axios.create({
-        baseURL: 'http://192.168.1.126:8000',
-    });
-
     const fetchRoles = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/api/roles/');
+            const response = await axios.get(`${API_URL}/api/roles/`);
             if (Array.isArray(response.data)) {
                 setAllRoles(response.data);
                 setRoles(response.data);
@@ -100,7 +98,7 @@ const AccessControlsPage = () => {
             return;
         }
         try {
-            await api.post('/api/roles/', newRole);
+            await axios.post(`${API_URL}/api/roles/`, newRole);
             toast.success("Role added successfully");
             fetchRoles();
             setOpenDialog(false);
@@ -115,7 +113,7 @@ const AccessControlsPage = () => {
     const handleEditRole = async () => {
         if (!editingRole) return;
         try {
-            await api.put(`/api/roles/${editingRole.roles_id}`, {
+            await axios.put(`${API_URL}/api/roles/${editingRole.roles_id}`, {
                 name: editingRole.name,
                 description: editingRole.description,
             });
@@ -132,7 +130,7 @@ const AccessControlsPage = () => {
 
     const handleDeleteRole = async (roleId: string) => {
         try {
-            await api.delete(`/api/roles/${roleId}`);
+            await axios.delete(`${API_URL}/api/roles/${roleId}`);
             toast.success("Role deleted successfully");
             fetchRoles();
         } catch (err) {

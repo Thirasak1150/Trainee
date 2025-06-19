@@ -41,7 +41,7 @@ const MenuManagerPage = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get('http://192.168.1.126:8000/api/roles');
+        const response = await axios.get('http://localhost:8000/api/roles');
         if (response.data && Array.isArray(response.data)) {
             setRoles(response.data);
         } else {
@@ -63,7 +63,7 @@ const MenuManagerPage = () => {
       const fetchMenusForRole = async () => {
         console.log("selectedRole", selectedRole);
         try {
-          const response = await axios.get(`http://192.168.1.126:8000/api/menu/role/${selectedRole}`);
+          const response = await axios.get(`http://localhost:8000/api/menu/role/${selectedRole}`);
           setMenusForRole(response.data || []);
         } catch (error) {
           console.error('Error fetching menus for role:', error);
@@ -90,15 +90,15 @@ const MenuManagerPage = () => {
     if (!selectedRole) return;
 
     const endpoint = type === 'header'
-      ? `http://192.168.1.126:8000/api/menu/role/${selectedRole}/header/${id}?enable=${enabled}`
-      : `http://192.168.1.126:8000/api/menu/role/${selectedRole}/item/${id}?enable=${enabled}`;
+      ? `http://localhost:8000/api/menu/role/${selectedRole}/header/${id}?enable=${enabled}`
+      : `http://localhost:8000/api/menu/role/${selectedRole}/item/${id}?enable=${enabled}`;
 
     try {
       await axios.put(endpoint);
       toast.success(`Access has been ${enabled ? 'granted' : 'revoked'}.`);
 
       // Refresh the role-specific menu data to reflect the change
-      const response = await axios.get(`http://192.168.1.126:8000/api/menu/role/${selectedRole}`);
+      const response = await axios.get(`http://localhost:8000/api/menu/role/${selectedRole}`);
       setMenusForRole(response.data || []);
 
     } catch (error) {

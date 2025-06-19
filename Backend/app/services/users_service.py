@@ -63,7 +63,9 @@ async def get_user_by_login(username: str,password: str):
                 return {"error": "User not found"}
             if user.password_hash != password:
                 return {"error": "Incorrect password"}
-
+            domains_id = await db.domains.find_first(
+                where={"manager_id": user.users_id}
+            )
             print("user loginSucces", user) 
             return {"message": "Login successful",
             "user_id": user.users_id,
@@ -71,6 +73,8 @@ async def get_user_by_login(username: str,password: str):
             "permissions": user.roles.name,
             "full_name": user.full_name,
             "email": user.email,
+            "domains_id": domains_id.domains_id if domains_id else None,
+            "domain_name": domains_id.domain_name if domains_id else None,
             }
         # TODO: Remove psycopg2 code after full Prisma migration
     except Exception as e:
@@ -143,6 +147,29 @@ async def delete_user(users_id: str):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         raise HTTPException(status_code=404, detail="User not found")
+
+async def get_user_by_username(username: str):
+    print(f"getting user by username: {username}")
+    try:
+        async for db in get_db():
+            user = await db.users.find_unique(
+                where={"username": username},
+                include={"roles": True}
+            )
+            if not user:
+                return None
+            
+            return {
+                "users_id": user.users_id,
+                "username": user.username,
+                "roles": user.roles.name,
+                "full_name": user.full_name,
+                "email": user.email,
+                "user_enabled": user.user_enabled,
+            }
+    except Exception as e:
+        print(f"An unexpected error occurred while fetching user by username: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 async def login_for_access_token(credentials: UserLoginCredentials):
     try:

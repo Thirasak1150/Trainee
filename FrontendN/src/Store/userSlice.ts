@@ -8,6 +8,8 @@ interface UserState {
   userRole: string | null;
   userEmail: string | null;
   fullName: string | null;
+  domains_id: string | null;
+  domain_name: string | null;
   menu: MenuHeader[];
 }
 
@@ -16,6 +18,8 @@ const initialState: UserState = {
   userRole: getCookie("userRole") || null,
   userEmail: getCookie("email") || null,
   fullName: getCookie("full_name") || null,
+  domains_id: getCookie("domains_id") || null,
+  domain_name: getCookie("domain_name") || null,
   menu: [],
 };
 
@@ -38,6 +42,12 @@ const userSlice = createSlice({
     setMenu: (state, action: PayloadAction<MenuHeader[]>) => {
       state.menu = action.payload;
     },
+    setDomainsId: (state, action: PayloadAction<string | null>) => {
+      state.domains_id = action.payload;
+    },
+    setDomainName: (state, action: PayloadAction<string | null>) => {
+      state.domain_name = action.payload;
+    },
     resetUser: (state) => {
       state.user_uuid = null;
       state.userRole = null;
@@ -54,6 +64,8 @@ export const {
   setUserEmail,
   setFullName,
   setMenu,
+  setDomainsId,
+  setDomainName,
   resetUser,
 } = userSlice.actions;
 

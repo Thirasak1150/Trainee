@@ -21,6 +21,7 @@ import ContactsPage from './app/application/contacts/contacts';
 // import Dashborad from './app/Dashborad/Dashborad';
 import { Provider } from 'react-redux';
 import { store } from './Store/store';
+import ExtensionSetting from './app/home/extension-setting/extension-setting';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -52,6 +53,14 @@ const router = createBrowserRouter([
     element: (
       <ClientLayoutWrapper>
         <ExtensionsPage />
+      </ClientLayoutWrapper>
+    ),
+  },
+  {
+    path: "/home/extension-setting",
+    element: (
+      <ClientLayoutWrapper>
+        <ExtensionSetting />
       </ClientLayoutWrapper>
     ),
   },

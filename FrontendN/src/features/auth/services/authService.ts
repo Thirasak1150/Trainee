@@ -1,10 +1,13 @@
 import axios, { AxiosError } from 'axios';
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://192.168.1.126:8000';
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:8000';
 import {
   setUserEmail,
   setUserRole,
   setUserUuid,
   setFullName,
+
+  setDomainsId,
+  setDomainName,
 } from "@/Store/userSlice";
 import { type AppDispatch } from "@/Store/store"
 export const handleLogin = async (
@@ -37,15 +40,21 @@ export const handleLogin = async (
         document.cookie = `user_uuid=${data.user_id}; path=/; expires=${expires}; SameSite=Lax; secure`;
         document.cookie = `full_name=${encodeURIComponent(data.full_name)}; path=/; expires=${expires}; SameSite=Lax; secure`;
         document.cookie = `email=${data.email}; path=/; expires=${expires}; SameSite=Lax; secure`;
+        document.cookie = `domain_id=${data.domains_id}; path=/; expires=${expires}; SameSite=Lax; secure`;
+        document.cookie = `domain_name=${data.domain_name}; path=/; expires=${expires}; SameSite=Lax; secure`;
         dispatch(setUserUuid(data.user_id));
         dispatch(setUserEmail(data.email));
         dispatch(setUserRole(userRole));
         dispatch(setFullName(data.full_name));
+        dispatch(setDomainsId(data.domains_id));
+        dispatch(setDomainName(data.domain_name));
         console.log("Setting cookies:", {
           userRole,
           user_uuid: data.user_id,
           full_name: data.full_name,
-          email: data.email
+          email: data.email,
+          domains_id: data.domains_id,
+          domain_name: data.domain_name
         });
         if (data.message == 'Login successful') {
           return true;

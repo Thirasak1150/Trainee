@@ -6,9 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Trash2, PenBox } from "lucide-react";
+import { Trash2, PenBox, PlusCircle, UserCheck } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,35 +19,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { motion } from 'framer-motion';
+import "./style.css";
+import type { RootState } from '@/Store/store';
+import { useSelector } from 'react-redux';
+
+interface User {
+    username: string;
+}
+
 interface Domain {
     domains_id: string;
     domain_name: string;
     enable: boolean;
+    manager_id?: string | null;
+    manager?: User | null;
+    creator?: User | null;
 }
-import "./style.css"
-import type { RootState } from '@/Store/store';
-import { useSelector } from 'react-redux';
+
 const DomainsPage = () => {
+    const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
     const { user_uuid } = useSelector((state: RootState) => state.user);
+
     const [domains, setDomains] = useState<Domain[]>([]);
     const [allDomains, setAllDomains] = useState<Domain[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
+    
     const [newDomain, setNewDomain] = useState({ domain_name: '', enable: true });
     const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
+    
+    const [managerUsername, setManagerUsername] = useState('');
+    const [managerId, setManagerId] = useState<string | null>(null);
+    const [managerStatus, setManagerStatus] = useState({ message: '', type: '' });
+
     const [searchTerm, setSearchTerm] = useState("");
-   
-    const api = axios.create({
-        baseURL: 'http://192.168.1.126:8000',
-    });
 
     const fetchDomains = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/api/domain/');
+            const response = await axios.get(`${API_URL}/api/domain/`);
+            console.log("Domains:", response.data);
             if (Array.isArray(response.data)) {
                 setAllDomains(response.data);
                 setDomains(response.data);
@@ -84,59 +98,88 @@ const DomainsPage = () => {
             setDomains(allDomains);
         } else {
             const value = searchTerm.toLowerCase();
-            setDomains(allDomains.filter(domain => domain.domain_name.toLowerCase().includes(value)));
+            setDomains(allDomains.filter(domain => {
+                const domainName = domain.domain_name.toLowerCase();
+                const managerName = domain.manager?.username?.toLowerCase() || '';
+                const creatorName = domain.creator?.username?.toLowerCase() || '';
+                return domainName.includes(value) || managerName.includes(value) || creatorName.includes(value);
+            }));
         }
     }, [searchTerm, allDomains]);
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (editingDomain) {
-            await handleEditDomain();
-        } else {
-            await handleAddDomain();
+    const handleDialogClose = () => {
+        setOpenDialog(false);
+        setEditingDomain(null);
+        setNewDomain({ domain_name: '', enable: true });
+        setManagerUsername('');
+        setManagerId(null);
+        setManagerStatus({ message: '', type: '' });
+    };
+
+    const handleOpenAddDialog = () => {
+        setEditingDomain(null);
+        setNewDomain({ domain_name: '', enable: true });
+        setManagerUsername('');
+        setManagerId(null);
+        setManagerStatus({ message: '', type: '' });
+        setOpenDialog(true);
+    };
+
+    const handleOpenEditDialog = (domain: Domain) => {
+        setEditingDomain(domain);
+        setNewDomain({ domain_name: domain.domain_name, enable: domain.enable });
+        setManagerUsername(domain.manager?.username || '');
+        setManagerId(domain.manager_id || null);
+        setManagerStatus({ message: '', type: '' });
+        setOpenDialog(true);
+    };
+
+    const handleCheckUser = async () => {
+        if (!managerUsername.trim()) {
+            setManagerStatus({ message: 'Please enter a username.', type: 'error' });
+            return;
+        }
+        try {
+            const response = await axios.get(`${API_URL}/api/users/check/${managerUsername}`);
+            if (response.data) {
+                setManagerId(response.data.users_id);
+                setManagerStatus({ message: `User "${response.data.username}" found.`, type: 'success' });
+                toast.success('Manager found and linked.');
+            }
+        } catch (error) {
+            setManagerId(null);
+            setManagerStatus({ message: 'User not found.', type: 'error' });
+            toast.error('Manager username not found.');
         }
     };
 
-    const handleAddDomain = async () => {
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!newDomain.domain_name) {
             toast.error('Domain name is required.');
             return;
         }
-        try {
-            await api.post('/api/domain/', { ...newDomain, created_by: user_uuid });
-            toast.success("Domain added successfully");
-            fetchDomains();
-            setOpenDialog(false);
-            setNewDomain({ domain_name: '', enable: true });
-        } catch (err) {
-            const error = err as AxiosError<{ detail: string | { loc: string[]; msg: string }[] }>;
-            const detail = error.response?.data?.detail;
-            let errorMessage = 'Failed to add domain.';
-            if (typeof detail === 'string') {
-                errorMessage = detail;
-            } else if (Array.isArray(detail) && detail.length > 0 && detail[0].msg) {
-                errorMessage = detail.map(d => `${d.loc.join('.')} - ${d.msg}`).join('; ');
-            }
-            toast.error(errorMessage);
-        }
-    };
 
-    const handleEditDomain = async () => {
-        if (!editingDomain) return;
+        const domainPayload = {
+            domain_name: newDomain.domain_name,
+            enable: newDomain.enable,
+            manager_id: managerId,
+        };
+
         try {
-            await api.put(`/api/domain/${editingDomain.domains_id}`, {
-                domain_name: editingDomain.domain_name,
-                enable: editingDomain.enable,
-                updated_by: user_uuid,
-            });
-            toast.success("Domain updated successfully");
+            if (editingDomain) {
+                await axios.put(`${API_URL}/api/domain/${editingDomain.domains_id}`, { ...domainPayload, updated_by: user_uuid });
+                toast.success("Domain updated successfully");
+            } else {
+                await axios.post(`${API_URL}/api/domain/`, { ...domainPayload, created_by: user_uuid });
+                toast.success("Domain added successfully");
+            }
             fetchDomains();
-            setOpenDialog(false);
-            setEditingDomain(null);
+            handleDialogClose();
         } catch (err) {
             const error = err as AxiosError<{ detail: string | { loc: string[]; msg: string }[] }>;
             const detail = error.response?.data?.detail;
-            let errorMessage = 'Failed to update domain.';
+            let errorMessage = editingDomain ? 'Failed to update domain.' : 'Failed to add domain.';
             if (typeof detail === 'string') {
                 errorMessage = detail;
             } else if (Array.isArray(detail) && detail.length > 0 && detail[0].msg) {
@@ -148,7 +191,7 @@ const DomainsPage = () => {
 
     const handleDeleteDomain = async (domainId: string) => {
         try {
-            await api.delete(`/api/domain/${domainId}`);
+            await axios.delete(`${API_URL}/api/domain/${domainId}`);
             toast.success("Domain deleted successfully");
             fetchDomains();
         } catch (err) {
@@ -175,153 +218,149 @@ const DomainsPage = () => {
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-red-500 text-center">
-                    <p className="text-xl mb-2">Error</p>
-                    <p>{error}</p>
-                    <Button variant="outline" className="mt-4" onClick={fetchDomains}>Retry</Button>
-                </div>
+                <div className="text-xl text-red-500">Error: {error}</div>
             </div>
         );
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-        >
-            <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
-                <Card className="mb-6 shadow-md md:mx-0 mx-4">
-                    <CardHeader className="px-4 sm:px-6">
-                        <CardTitle className="text-xl sm:text-2xl font-bold text-center">Domain Management</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4 sm:px-6">
-                        <div className="flex flex-row justify-between items-center gap-2 sm:gap-3">
-                            <div className="flex-1 md:flex-none">
-                                <Label htmlFor="search" className="sr-only">Search Domains</Label>
-                                <Input
-                                    id="search"
-                                    placeholder="Search domains..."
-                                    className="w-full"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <Dialog open={openDialog} onOpenChange={(isOpen) => {
-                                setOpenDialog(isOpen);
-                                if (!isOpen) {
-                                    setEditingDomain(null);
-                                }
-                            }}>
-                                <DialogTrigger asChild>
-                                    <Button size="sm" className="flex-shrink-0" onClick={() => setNewDomain({ domain_name: '', enable: true })}>Add Domain</Button>
-                                </DialogTrigger>
-                                <DialogContent className="w-[95%] sm:max-w-md">
+        <div className="p-4 text-white min-h-screen">
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="max-w-7xl mx-auto"
+            >
+                <Card className="">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>Domains Management</CardTitle>
+                        <Dialog open={openDialog} onOpenChange={(isOpen) => !isOpen && handleDialogClose()}>
+                            <DialogTrigger asChild>
+                                <Button onClick={handleOpenAddDialog}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Domain
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px] " onEscapeKeyDown={handleDialogClose}>
+                                <form onSubmit={handleSave}>
                                     <DialogHeader>
-                                        <DialogTitle>{editingDomain ? "Edit Domain" : "Add New Domain"}</DialogTitle>
+                                        <DialogTitle>{editingDomain ? 'Edit Domain' : 'Add New Domain'}</DialogTitle>
+                                        <DialogDescription>
+                                            {editingDomain ? 'Make changes to your domain here.' : 'Create a new domain for your system.'}
+                                        </DialogDescription>
                                     </DialogHeader>
-                                    <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
-                                        <div>
-                                            <Label className=' mb-2' htmlFor="domain_name">Domain Name</Label>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="name" className="text-right">Name</Label>
                                             <Input
-                                                id="domain_name"
-                                                value={editingDomain ? editingDomain.domain_name : newDomain.domain_name}
-                                                onChange={(e) => editingDomain ? setEditingDomain({ ...editingDomain, domain_name: e.target.value }) : setNewDomain({ ...newDomain, domain_name: e.target.value })}
-                                                required
+                                                id="name"
+                                                value={newDomain.domain_name}
+                                                onChange={(e) => setNewDomain({ ...newDomain, domain_name: e.target.value })}
+                                                className="col-span-3 bg-gray-700 border-gray-600"
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                          <Label htmlFor="domain_enabled">Status</Label>
-                                          <Switch
-                                            id="domain_enabled"
-                                            checked={editingDomain ? editingDomain.enable : newDomain.enable}
-                                            onCheckedChange={(checked) => editingDomain ? setEditingDomain({ ...editingDomain, enable: checked }) : setNewDomain({ ...newDomain, enable: checked })}
-                                          />
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="enable" className="text-right">Enable</Label>
+                                            <Switch
+                                                id="enable"
+                                                checked={newDomain.enable}
+                                                onCheckedChange={(checked) => setNewDomain({ ...newDomain, enable: checked })}
+                                            />
                                         </div>
-                                        <DialogFooter>
-                                            <DialogClose asChild>
-                                                <Button type="button" variant="outline">Cancel</Button>
-                                            </DialogClose>
-                                            <Button type="submit">{editingDomain ? "Update Domain" : "Add Domain"}</Button>
-                                        </DialogFooter>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="shadow-md md:mx-0 mx-4">
-                    <CardHeader className="px-4 sm:px-6">
-                        <CardTitle className="text-lg sm:text-xl font-semibold">Domains List</CardTitle>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="manager" className="text-right">Manager</Label>
+                                            <Input
+                                                id="manager"
+                                                value={managerUsername}
+                                                onChange={(e) => setManagerUsername(e.target.value)}
+                                                className="col-span-2 bg-gray-700 border-gray-600"
+                                                placeholder="Enter username"
+                                            />
+                                            <Button type="button" onClick={handleCheckUser} className="col-span-1 bg-indigo-600 hover:bg-indigo-700 text-xs p-2 h-auto">
+                                                <UserCheck className="h-4 w-4 mr-1"/>
+                                                Check
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4 -mt-2">
+                                            <div className="col-start-2 col-span-3">
+                                                {managerStatus.message && (
+                                                    <p className={`text-xs ${managerStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {managerStatus.message}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="button" variant="outline" onClick={handleDialogClose}>Cancel</Button>
+                                        <Button type="submit">Save changes</Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
                     </CardHeader>
-                    <CardContent className="px-4 sm:px-6">
-                        {domains.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500 text-sm sm:text-base">
-                                No domains found.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Domain Name</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {domains.map((domain) => (
-                                            <TableRow key={domain.domains_id}>
-                                                <TableCell className="font-medium">{domain.domain_name}</TableCell>
-                                                <TableCell>
+                    <CardContent>
+                        <div className="flex justify-start mb-4">
+                            <Input
+                                placeholder="Search by domain, manager, or creator..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="max-w-sm bg-gray-700 border-gray-600"
+                            />
+                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Domain Name</TableHead>
+                                    <TableHead>Manager</TableHead>
+                                    <TableHead>Creator</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {domains.map((domain) => (
+                                    <TableRow key={domain.domains_id}>
+                                        <TableCell>{domain.domain_name}</TableCell>
+                                        <TableCell>{domain.manager?.username || '-'}</TableCell>
+                                        <TableCell>{domain.creator?.username || '-'}</TableCell>
+                                        <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <span className={`h-3 w-3 rounded-full ${domain.enable ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                                         <span>{domain.enable ? 'Enabled' : 'Disabled'}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className=' flex gap-2 justify-end'>
-                                                        <Button  variant="default" size="icon" className="hover:text-yellow-400" onClick={() => {
-                                                            setEditingDomain(domain);
-                                                            setOpenDialog(true);
-                                                        }}>
-                                                            <PenBox className="hover:text-yellow-400" />
-                                                        </Button>
-                                                        <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700">
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent className="w-[95%] sm:max-w-sm">
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This action cannot be undone. This will permanently delete the domain
-                                                                    <span className='font-bold'> &quot;{domain.domain_name}&quot; </span>.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteDomain(domain.domains_id)}>Continue</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                    </div>
-                                                
-                                              
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
+                                        <TableCell className="text-right space-x-2">
+                                            <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => handleOpenEditDialog(domain)}>
+                                                <PenBox className="h-4 w-4" />
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="icon">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action cannot be undone. This will permanently delete the domain <span className='font-bold'>{`"${domain.domain_name}"`}</span>.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteDomain(domain.domains_id)}>Continue</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </CardContent>
                 </Card>
-            </div>
-        </motion.div>
+            </motion.div>
+        </div>
     );
 };
 

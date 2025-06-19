@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.1.126:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 

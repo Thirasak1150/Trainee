@@ -1,7 +1,7 @@
 import type { ProfileData, ResponseUpdateProfileData, updateProfileData } from '../types/Profile.type';
 import axios from 'axios';
 import { toast } from 'sonner';
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://192.168.1.126:8000';
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
 
 export const updateUserProfile = async (user_uuid: string, formData: ProfileData, setInitialData: (data: ProfileData) => void, setFormData: (data: ProfileData) => void) => {
     if (formData.password && formData.password !== formData.confirm_password) {

@@ -42,7 +42,7 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 
-const API_BASE_URL = 'http://192.168.1.126:8000';
+const API_BASE_URL = 'http://localhost:8000';
 
 // API fetching utility
 const api = {
@@ -88,6 +88,7 @@ const initialFormData = {
 };
 
 const ContactsPage = () => {
+  const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [extensions, setExtensions] = useState<Extension[]>([]);
@@ -105,11 +106,11 @@ const ContactsPage = () => {
     try {
       const url = filterType === 'ALL' ? '/api/contacts/' : `/api/contacts?contact_type=${filterType}`;
       const [contactsData, extensionsData] = await Promise.all([
-        api.get(url),
-        api.get('/api/extensions/domains'),
+        axios.get(`${API_URL}${url}`),
+        axios.get(`${API_URL}/api/extensions/domains`),
       ]);
-      setContacts(contactsData || []);
-      setDomains(extensionsData || []);
+      setContacts(contactsData.data || []);
+      setDomains(extensionsData.data || []);
       // If a domain is already selected, refresh its extensions
       if (formData.domain_id) {
         await loadExtensionsByDomain(formData.domain_id);
@@ -124,8 +125,8 @@ const ContactsPage = () => {
 
   const loadExtensionsByDomain = async (domainId: string) => {
     try {
-      const data = await api.get(`/api/extensions/domain/${domainId}`);
-      setExtensions(data || []);
+      const data = await axios.get(`${API_URL}/api/extensions/domain/${domainId}`);
+      setExtensions(data.data || []);
     } catch (err) {
       console.error(err);
       toast.error('Failed to load extensions');

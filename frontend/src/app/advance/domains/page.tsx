@@ -41,7 +41,7 @@ const DomainsPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
    
     const api = axios.create({
-        baseURL: 'http://192.168.1.126:8000',
+        baseURL: 'http://localhost:8000',
     });
 
     const fetchDomains = async () => {

@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux'
 import type { RootState } from '@/Store/store'
 
 const AccountSetting = () => {
+
   const { user_uuid } = useSelector((state: RootState) => state.user);
   const [loading, setLoading] = useState(true)
   console.log(loading)

@@ -26,17 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
-// --- API Service ---
-const API_BASE_URL = 'http://192.168.1.126:8000/api';
 
-const apiService = {
-  getRoles: () => axios.get(`${API_BASE_URL}/roles/`),
-  getMenusForRole: (roleId: string) => axios.get(`${API_BASE_URL}/menu/role/${roleId}`),
-  updateMenuName: (type: 'header' | 'item', id: string, name: string) => axios.put(`${API_BASE_URL}/menu/name/${type}/${id}`, { name }),
-  resetAllMenuNames: () => axios.post(`${API_BASE_URL}/menu/reset-names`),
-  updateMenuAccess: (type: 'header' | 'item', roleId: string, menuId: string, enabled: boolean) => 
-    axios.put(`${API_BASE_URL}/menu/${type}/${roleId}/${menuId}?enable=${enabled}`),
-};
 
 // --- Type Interfaces ---
 interface Role {
@@ -66,6 +56,7 @@ interface MenuHeader {
 
 // --- Component ---
 const MenuManagerPage = () => {
+  const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [menusForRole, setMenusForRole] = useState<MenuHeader[]>([]);
@@ -78,7 +69,7 @@ const MenuManagerPage = () => {
   // --- Data Fetching Functions ---
   const fetchRoles = useCallback(async () => {
     try {
-      const response = await apiService.getRoles();
+      const response = await axios.get(`${API_URL}/api/roles/`);
       if (response.data && Array.isArray(response.data)) {
         setRoles(response.data);
       } else {
@@ -93,7 +84,7 @@ const MenuManagerPage = () => {
   const fetchMenusForRole = useCallback(async (roleId: string) => {
     setLoadingMenus(true);
     try {
-      const response = await apiService.getMenusForRole(roleId);
+      const response = await axios.get(`${API_URL}/api/menu/role/${roleId}`);
       setMenusForRole(response.data || []);
     } catch (error) {
       console.error('Error fetching menus for role:', error);
@@ -137,7 +128,7 @@ const MenuManagerPage = () => {
 
   const handleNameUpdate = async (type: 'header' | 'item', id: string) => {
     try {
-      await apiService.updateMenuName(type, id, editingName);
+      await axios.put(`${API_URL}/api/menu/name/${type}/${id}`, { name: editingName });
       toast.success("Menu name updated successfully!");
       setEditingId(null);
       refreshMenus();
@@ -149,7 +140,7 @@ const MenuManagerPage = () => {
 
   const handleResetAllNames = async () => {
     try {
-      await apiService.resetAllMenuNames();
+      await axios.post(`${API_URL}/api/menu/reset-names`);
       toast.success("All menu names have been reset to default.");
       setIsResetConfirmOpen(false);
       refreshMenus();
@@ -162,7 +153,7 @@ const MenuManagerPage = () => {
   const handleAccessChange = async (type: 'header' | 'item', id: string, enabled: boolean) => {
     if (!selectedRole) return;
     try {
-      await apiService.updateMenuAccess(type, selectedRole, id, enabled);
+      await axios.put(`${API_URL}/api/menu/${type}/${selectedRole}/${id}?enable=${enabled}`);
       toast.success(`Access has been ${enabled ? 'granted' : 'revoked'}.`);
       refreshMenus();
     } catch (error) {

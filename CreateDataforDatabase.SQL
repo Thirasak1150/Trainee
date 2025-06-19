@@ -6,6 +6,7 @@ DELETE FROM role_menus;
 DELETE FROM menu_items;
 DELETE FROM menu_headers;
 DELETE FROM extensions;
+DELETE FROM contacts;
 DELETE FROM domains;
 DELETE FROM users;
 DELETE FROM roles;
@@ -53,13 +54,14 @@ VALUES
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Account Setting', '/home/account-setting', 1, 'account-setting'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Accounts', '/home/accounts', 2, 'accounts'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Extensions', '/home/extensions', 3, 'extensions'),
+  (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Extension Setting', '/home/extension-setting', 4, 'extension-setting'),
   -- Advance
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Access Controls', '/advance/access-controls', 1, 'access-controls'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Domains', '/advance/domains', 2, 'domains'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Menu Manager', '/advance/menu-manager', 3, 'menu-manager'),
   -- Application
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Application'), 'Contacts', '/application/contacts', 1, 'contacts');
-  
+
 -- ================================
 -- ✅ 7. Mapping Role ↔ Menu Headers
 -- ================================
@@ -82,7 +84,6 @@ INSERT INTO extensions (
   domain_id,
   user_id,
   extension_number,
-
   voicemail_enabled,
   is_active,
   call_forwarding,
@@ -96,7 +97,6 @@ VALUES
     (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
     (SELECT users_id FROM users WHERE username = 'superadmin'),
     '1001',
-
     true,
     true,
     '0912345678',
@@ -109,7 +109,6 @@ VALUES
     (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
     (SELECT users_id FROM users WHERE username = 'admin'),
     '1002',
- 
     false,
     true,
     NULL,
@@ -122,7 +121,6 @@ VALUES
     (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com'),
     (SELECT users_id FROM users WHERE username = 'user'),
     '2001',
-  
     false,
     true,
     '0890000000',
@@ -130,8 +128,9 @@ VALUES
     now(),
     now()
   );
+
 -- ================================
--- ✅ เพิ่มข้อมูล Contacts
+-- ✅ 10. เพิ่มข้อมูล Contacts
 -- ================================
 INSERT INTO contacts (
   contact_id,
@@ -166,6 +165,18 @@ VALUES
     now(),
     now()
   );
+
 -- ================================
--- 🎉 สำเร็จแล้ว!
+-- ✅ 11. ตั้ง Admin เป็นเจ้าของ domain companyA.com
+-- ================================
+UPDATE domains
+SET 
+  manager_id = (SELECT users_id FROM users WHERE username = 'admin'),
+  created_by = (SELECT users_id FROM users WHERE username = 'admin'),
+  updated_by = (SELECT users_id FROM users WHERE username = 'admin'),
+  updated_at = now()
+WHERE domain_name = 'companyA.com';
+
+-- ================================
+-- 🎉 เสร็จสมบูรณ์!
 -- ================================

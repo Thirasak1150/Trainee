@@ -7,13 +7,14 @@ from datetime import datetime
 
 class Domain(BaseModel):
     domains_id: str = Field(..., alias='domains_id')
+    manager_id: Optional[str] = None
     domain_name: str
     enable: bool
     created_at: datetime
     created_by: Optional[str] = None
     updated_at: datetime
     updated_by: Optional[str] = None
-
+    
     class Config:
         orm_mode = True
         populate_by_name = True
@@ -30,7 +31,8 @@ class DomainCreate(BaseModel):
 class DomainUpdate(BaseModel):
     domain_name: str
     enable: bool
-    updated_by: Optional[str] = None
+    updated_by: str
+    manager_id: Optional[str] = None
     created_by: Optional[str] = None
     class Config:
         orm_mode = True

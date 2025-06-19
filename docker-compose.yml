@@ -36,6 +36,18 @@ services:
 
   
 
+  db-init:
+    image: postgres:15
+    depends_on:
+      - postgres
+    entrypoint: ["psql", "-h", "postgres", "-U", "postgres", "-d", "TecnimicPBX", "-f", "/docker-entrypoint-initdb.d/01-init.sql"]
+    environment:
+      PGPASSWORD: StrongP@ssw0rd123!
+    volumes:
+      - ./CreateDataforDatabase.SQL:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - trainee-network
+
 networks:
   trainee-network:
     driver: bridge

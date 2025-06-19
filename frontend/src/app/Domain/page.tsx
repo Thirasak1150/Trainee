@@ -50,7 +50,7 @@ export default function DomainPage() {
   const fetchDomains = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://192.168.1.126:8000/api/domain");
+      const response = await axios.get("http://localhost:8000/api/domain");
       setAllDomains(response.data);
       setDomains(response.data);
       setLoading(false);
@@ -85,7 +85,7 @@ export default function DomainPage() {
     console.log("newDomain",newDomain)
     try {
  
-      const response = await axios.post("http://192.168.1.126:8000/api/domain", newDomain);
+      const response = await axios.post("http://localhost:8000/api/domain", newDomain);
       setDomains([...domains, response.data]);
       setNewDomain({ domain_name: "", domain_enabled: false, domain_description: "" ,created_by:user_uuid});
       setOpenDialog(false);
@@ -100,7 +100,7 @@ export default function DomainPage() {
     e.preventDefault();
     if (!editingDomain) return;
     try {
-      const response = await axios.put(`http://192.168.1.126:8000/api/domain/${editingDomain.domain_uuid}`, {
+      const response = await axios.put(`http://localhost:8000/api/domain/${editingDomain.domain_uuid}`, {
         domain_name: editingDomain.domain_name,
         domain_enabled: editingDomain.domain_enabled,
         domain_description: editingDomain.domain_description
@@ -117,7 +117,7 @@ export default function DomainPage() {
 
   const handleDeleteDomain = async (domain_uuid: string) => {
     try {
-      await axios.delete(`http://192.168.1.126:8000/api/domain/${domain_uuid}`);
+      await axios.delete(`http://localhost:8000/api/domain/${domain_uuid}`);
       setDomains(domains.filter(domain => domain.domain_uuid !== domain_uuid));
       toast.success("Domain deleted successfully");
     } catch (err) {

@@ -9,7 +9,13 @@ import uuid
 async def get_all_domains():
     try:
         async for db in get_db():
-            domains = await db.domains.find_many()
+            domains = await db.domains.find_many(
+                include={
+                    "creator": True,
+                    "manager": True
+                }
+            )
+            print(domains)
             return domains
     except Exception as e:
         print(e)
@@ -34,11 +40,8 @@ async def create_domain(domain: DomainCreate):
 async def update_domain(domains_id: str, domain: DomainUpdate):
     try:
         async for db in get_db():
-            update_data = {
-                "domain_name": domain.domain_name,
-                "enable": domain.enable,
-                "updated_by": domain.updated_by
-            }
+            update_data = domain.dict(exclude_unset=True)
+
             updated_domain = await db.domains.update(
                 where={"domains_id": domains_id},
                 data=update_data

@@ -36,6 +36,11 @@ async def get_menu_by_user_id(user_id: str):
                         }
                     }
                 },
+                order=[
+                    {
+                        "order_index": "asc"
+                    }
+                ],
                 include={
                     "menu_items": {
                         "where": {
@@ -44,11 +49,17 @@ async def get_menu_by_user_id(user_id: str):
                                     "roles_id": role_id
                                 }
                             }
-                        }
+                        },
+                     
                     }
                 }
+                
             )
-
+            for header in menu_headers:
+                if header.menu_items:
+                    header.menu_items.sort(
+                        key=lambda item: item.order_index if item.order_index is not None else float('inf')
+                    )
             return menu_headers
 
     except Exception as e:
@@ -74,7 +85,14 @@ async def get_menu_by_role(role_id: str):
                                     "roles_id": role_id
                                 }
                             }
-                        }
+                        },
+                        "order": [
+                            {"order_index": "asc"}
+                        ]
+                    },
+                    # //ต้องการให้ order by order_index
+                    "order": {
+                        "order_index": "asc"
                     },
                     "role_menus": {
                         "where": {

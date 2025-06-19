@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from app.services.users_service import get_all_users, get_user_by_login, get_user_by_uuid, create_user, update_user, delete_user, login_for_access_token
+from app.services.users_service import get_all_users, get_user_by_login, get_user_by_uuid, create_user, update_user, delete_user, login_for_access_token, get_user_by_username, get_user_by_username
 from app.schemas.usersSchemas import UserLoginCredentials, LoginResponse
 from typing import Dict
 
@@ -12,6 +12,13 @@ async def read_users():
     """
     users = await get_all_users()
     return users
+
+@router.get("/check/{username}")
+async def check_user_by_username(username: str):
+    user = await get_user_by_username(username)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.get("/{user_uuid}")
 async def read_user_by_uuid(user_uuid: str):
@@ -26,6 +33,12 @@ async def read_user_by_uuid(user_uuid: str):
 async def Get_user_by_login(credentials: UserLoginCredentials):
     return await get_user_by_login(credentials.username, credentials.password)
 
+@router.get("/check/{username}")
+async def check_user_by_username(username: str):
+    user = await get_user_by_username(username)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_new_user(user_data: Dict):
@@ -50,5 +63,3 @@ async def delete_existing_user(user_uuid: str):
     ลบผู้ใช้
     """
     return await delete_user(user_uuid)
-
-

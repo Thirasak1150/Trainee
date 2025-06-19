@@ -3,7 +3,7 @@ from app.services.domain_service import get_all_domains, create_domain, update_d
 from app.schemas.domainSchemas import Domain, DomainCreate, DomainUpdate
 router = APIRouter()
 
-@router.get("/" , response_model=list[Domain])
+@router.get("/" )
 async def read_domains():
     """
     ดึงข้อมูลโดเมนทั้งหมด

@@ -33,25 +33,25 @@ model users {
 
   domains_created domains[] @relation("domainsCreated")       // รายการ domain ที่ผู้ใช้สร้าง
   domains_updated domains[] @relation("domainsUpdated")       // รายการ domain ที่ผู้ใช้แก้ไขล่าสุด
+  domains_managed domains[] @relation("domainsManaged")       // รายการ domain ที่ผู้ใช้จัดการ
 }
-
 model domains {
-  domains_id   String   @id @default(uuid()) @db.Uuid         // รหัส domain (Primary Key) แบบ UUID
-  domain_name  String   @unique                                // ชื่อ domain ต้องไม่ซ้ำ
-  enable       Boolean  @default(true)                         // สถานะเปิด/ปิดใช้งาน domain
-  created_at   DateTime @default(now())                        // วันที่สร้าง
-  created_by   String?  @db.Uuid                                // รหัสผู้ใช้ที่สร้าง domain (Foreign Key)
-  updated_at   DateTime @default(now())                        // วันที่แก้ไขล่าสุด
-  updated_by   String?  @db.Uuid                                // รหัสผู้ใช้ที่แก้ไข domain ล่าสุด (Foreign Key)
-  extensions   extensions[]                                    // ความสัมพันธ์กับ extensions (หลายรายการ)
+  domains_id    String   @id @default(uuid()) @db.Uuid          // รหัส domain
+  manager_id    String?  @db.Uuid                              // ✅ เปลี่ยนเป็น optional เพื่อรองรับการ SetNull
+  domain_name   String   @unique                               // ชื่อ domain ต้องไม่ซ้ำ
+  enable        Boolean  @default(true)                        // เปิด/ปิดใช้งาน domain
+  created_at    DateTime @default(now())                       // วันที่สร้าง
+  created_by    String?  @db.Uuid                              // ผู้ใช้ที่สร้าง
+  updated_at    DateTime @default(now())                       // วันที่อัปเดตล่าสุด
+  updated_by    String?  @db.Uuid                              // ผู้ใช้ที่แก้ไขล่าสุด
+  
+  extensions    extensions[]                                   // รายการ extension
 
-  // ความสัมพันธ์กับผู้ใช้ที่สร้าง domain แบบ cascade delete
-  creator users? @relation("domainsCreated", fields: [created_by], references: [users_id], onDelete: Cascade)
-
-  // ความสัมพันธ์กับผู้ใช้ที่แก้ไข domain (ถ้า user ถูกลบจะ set null)
-  updater users? @relation("domainsUpdated", fields: [updated_by], references: [users_id], onDelete: SetNull)
+  // ความสัมพันธ์กับผู้ใช้แต่ละบทบาท
+  creator       users?  @relation("domainsCreated", fields: [created_by], references: [users_id], onDelete: SetNull)
+  updater       users?  @relation("domainsUpdated", fields: [updated_by], references: [users_id], onDelete: SetNull)
+  manager       users?  @relation("domainsManaged", fields: [manager_id], references: [users_id], onDelete: SetNull)
 }
-
 model menu_headers {
   menu_headers_id String        @id @default(uuid()) @db.Uuid  // รหัสเมนูหลัก (Primary Key)
   name_default    String                                    // ชื่อเมนูหลักภาษาเริ่มต้น
