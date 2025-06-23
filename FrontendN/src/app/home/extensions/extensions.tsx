@@ -471,7 +471,7 @@ const ExtensionsPage = () => {
                                                     <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteDialog(ext)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                </div>
+                                                </div>          
                                             </TableCell>
                                         </TableRow>
                                     ))}

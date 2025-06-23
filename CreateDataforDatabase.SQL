@@ -1,5 +1,5 @@
 -- ================================
--- 🔥 1. ลบข้อมูลทั้งหมด
+-- 🔥 1. ลบข้อมูลทั้งหมด (ถ้ามีความสัมพันธ์ ให้ลบตามลำดับ)
 -- ================================
 DELETE FROM role_menu_items;
 DELETE FROM role_menus;
@@ -7,6 +7,7 @@ DELETE FROM menu_items;
 DELETE FROM menu_headers;
 DELETE FROM extensions;
 DELETE FROM contacts;
+DELETE FROM group_extensions;
 DELETE FROM domains;
 DELETE FROM users;
 DELETE FROM roles;
@@ -37,7 +38,16 @@ VALUES
   (gen_random_uuid(), 'companyB.com', true, now(), now());
 
 -- ================================
--- ✅ 5. เพิ่ม Menu Headers
+-- ✅ 5. เพิ่มข้อมูล Group Extensions (กลุ่ม)
+-- ================================
+INSERT INTO group_extensions (group_id, domain_id, name, description, is_active, created_at, updated_at)
+VALUES
+  (gen_random_uuid(), (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'), 'IT', 'IT Department', true, now(), now()),
+  (gen_random_uuid(), (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'), 'Accounting', 'Accounting Department', true, now(), now()),
+  (gen_random_uuid(), (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com'), 'HR', 'Human Resources', true, now(), now());
+
+-- ================================
+-- ✅ 6. เพิ่ม Menu Headers
 -- ================================
 INSERT INTO menu_headers (menu_headers_id, name_default, order_index)
 VALUES
@@ -46,7 +56,7 @@ VALUES
   (gen_random_uuid(), 'Application', 3);
 
 -- ================================
--- ✅ 6. เพิ่ม Menu Items
+-- ✅ 7. เพิ่ม Menu Items
 -- ================================
 INSERT INTO menu_items (menu_items_id, menu_headers_id, name_default, path, order_index, icon)
 VALUES
@@ -55,6 +65,7 @@ VALUES
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Accounts', '/home/accounts', 2, 'accounts'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Extensions', '/home/extensions', 3, 'extensions'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Extension Setting', '/home/extension-setting', 4, 'extension-setting'),
+  (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Group Extensions', '/home/group-extensions', 5, 'group-extensions'),
   -- Advance
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Access Controls', '/advance/access-controls', 1, 'access-controls'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Domains', '/advance/domains', 2, 'domains'),
@@ -63,25 +74,26 @@ VALUES
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Application'), 'Contacts', '/application/contacts', 1, 'contacts');
 
 -- ================================
--- ✅ 7. Mapping Role ↔ Menu Headers
+-- ✅ 8. Mapping Role ↔ Menu Headers
 -- ================================
 INSERT INTO role_menus (roles_id, menu_headers_id)
 SELECT r.roles_id, h.menu_headers_id
 FROM roles r, menu_headers h;
 
 -- ================================
--- ✅ 8. Mapping Role ↔ Menu Items
+-- ✅ 9. Mapping Role ↔ Menu Items
 -- ================================
 INSERT INTO role_menu_items (roles_id, menu_items_id)
 SELECT r.roles_id, i.menu_items_id
 FROM roles r, menu_items i;
 
 -- ================================
--- ✅ 9. เพิ่ม Extension
+-- ✅ 10. เพิ่ม Extensions พร้อมเชื่อม group_id
 -- ================================
 INSERT INTO extensions (
   extension_id,
   domain_id,
+  group_id,
   user_id,
   extension_number,
   voicemail_enabled,
@@ -95,47 +107,52 @@ VALUES
   (
     gen_random_uuid(),
     (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
+    (SELECT group_id FROM group_extensions WHERE name = 'IT' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com')),
     (SELECT users_id FROM users WHERE username = 'superadmin'),
     '1001',
     true,
     true,
     '0912345678',
-    'Extension of Super Admin',
+    'Extension of Super Admin in IT Group',
     now(),
     now()
   ),
   (
     gen_random_uuid(),
     (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
+    (SELECT group_id FROM group_extensions WHERE name = 'Accounting' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com')),
     (SELECT users_id FROM users WHERE username = 'admin'),
     '1002',
     false,
     true,
     NULL,
-    'Extension of Admin',
+    'Extension of Admin in Accounting Group',
     now(),
     now()
   ),
   (
     gen_random_uuid(),
     (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com'),
+    (SELECT group_id FROM group_extensions WHERE name = 'HR' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com')),
     (SELECT users_id FROM users WHERE username = 'user'),
     '2001',
     false,
     true,
     '0890000000',
-    'Extension of Normal User',
+    'Extension of Normal User in HR Group',
     now(),
     now()
   );
 
 -- ================================
--- ✅ 10. เพิ่มข้อมูล Contacts
+-- ✅ 11. เพิ่มข้อมูล Contacts
 -- ================================
 INSERT INTO contacts (
   contact_id,
+  domain_id,
   full_name,
   phone_number,
+  contact_type,
   extension_id,
   created_at,
   updated_at
@@ -143,31 +160,38 @@ INSERT INTO contacts (
 VALUES
   (
     gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
     'John Doe',
     '0812345678',
-    (SELECT extension_id FROM extensions WHERE extension_number = '1001' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com')),
+    'INTERNAL',
+    (SELECT extension_id FROM extensions WHERE extension_number = '1001'),
     now(),
     now()
   ),
   (
     gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
     'Jane Admin',
     '0823456789',
-    (SELECT extension_id FROM extensions WHERE extension_number = '1002' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com')),
+    'EXTERNAL',
+    (SELECT extension_id FROM extensions WHERE extension_number = '1002'),
     now(),
     now()
   ),
   (
     gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com'),
     'Normal User Contact',
     '0834567890',
-    (SELECT extension_id FROM extensions WHERE extension_number = '2001' AND domain_id = (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com')),
+    'EXTERNAL',
+    (SELECT extension_id FROM extensions WHERE extension_number = '2001'),
     now(),
     now()
   );
 
+
 -- ================================
--- ✅ 11. ตั้ง Admin เป็นเจ้าของ domain companyA.com
+-- ✅ 12. ตั้ง Admin เป็นเจ้าของ domain companyA.com
 -- ================================
 UPDATE domains
 SET 

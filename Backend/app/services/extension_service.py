@@ -1,4 +1,32 @@
 from fastapi import HTTPException, status
+from prisma.models import extensions
+
+async def get_extension_by_id(db: "Prisma", extension_id: str) -> extensions:
+    """Get a single extension by its ID."""
+    extension = await db.extensions.find_unique(
+        where={"extension_id": extension_id},
+        include={"domain": True}
+    )
+    if not extension:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Extension with id {extension_id} not found",
+        )
+    return extension
+from prisma.models import extensions
+
+async def get_extension_by_id(db: "Prisma", extension_id: str) -> extensions:
+    """Get a single extension by its ID."""
+    extension = await db.extensions.find_unique(
+        where={"extension_id": extension_id},
+        include={"domain": True}
+    )
+    if not extension:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Extension with id {extension_id} not found",
+        )
+    return extension
 from prisma import Prisma
 from app.schemas import extensionSchemas
 

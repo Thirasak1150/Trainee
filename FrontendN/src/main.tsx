@@ -22,6 +22,7 @@ import ContactsPage from './app/application/contacts/contacts';
 import { Provider } from 'react-redux';
 import { store } from './Store/store';
 import ExtensionSetting from './app/home/extension-setting/extension-setting';
+import GroupExtensions from './app/home/group-extensions/group-extensions';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -61,6 +62,14 @@ const router = createBrowserRouter([
     element: (
       <ClientLayoutWrapper>
         <ExtensionSetting />
+      </ClientLayoutWrapper>
+    ),
+  },
+  {
+    path: "/home/group-extensions",
+    element: (
+      <ClientLayoutWrapper>
+        <GroupExtensions />
       </ClientLayoutWrapper>
     ),
   },

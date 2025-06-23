@@ -40,7 +40,7 @@ export const handleLogin = async (
         document.cookie = `user_uuid=${data.user_id}; path=/; expires=${expires}; SameSite=Lax; secure`;
         document.cookie = `full_name=${encodeURIComponent(data.full_name)}; path=/; expires=${expires}; SameSite=Lax; secure`;
         document.cookie = `email=${data.email}; path=/; expires=${expires}; SameSite=Lax; secure`;
-        document.cookie = `domain_id=${data.domains_id}; path=/; expires=${expires}; SameSite=Lax; secure`;
+        document.cookie = `domains_id=${data.domains_id}; path=/; expires=${expires}; SameSite=Lax; secure`;
         document.cookie = `domain_name=${data.domain_name}; path=/; expires=${expires}; SameSite=Lax; secure`;
         dispatch(setUserUuid(data.user_id));
         dispatch(setUserEmail(data.email));

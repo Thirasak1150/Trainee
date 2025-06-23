@@ -41,20 +41,9 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
+import { useSelector } from 'react-redux';
 
 const API_BASE_URL = 'http://localhost:8000';
-
-// API fetching utility
-const api = {
-  // @ts-ignore
-  get: (url) => axios.get(`${API_BASE_URL}${url}`).then(res => res.data),
-  // @ts-ignore
-  post: (url, data) => axios.post(`${API_BASE_URL}${url}`, data).then(res => res.data),
-  // @ts-ignore
-  put: (url, data) => axios.put(`${API_BASE_URL}${url}`, data).then(res => res.data),
-        // @ts-ignore
-  delete: (url) => axios.delete(`${API_BASE_URL}${url}`).then(res => res.data),
-};
 
 // Type definitions
 interface Contact {
@@ -68,10 +57,6 @@ interface Contact {
   domain?: { domain_id: string; domain_name: string };
 }
 
-interface Domain {
-  domains_id: string;
-  domain_name: string;
-}
 
 interface Extension {
   extension_id: string;
@@ -89,8 +74,12 @@ const initialFormData = {
 
 const ContactsPage = () => {
   const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
+  console.log("API URL2222:", API_URL);
+  const domains_id = useSelector((state: any) => state.user.domains_id);
+  console.log("Domains ID2222:", domains_id);
+  const domain_name = useSelector((state: any) => state.user.domain_name);
+  console.log("Domain Name2222:", domain_name);
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [domains, setDomains] = useState<Domain[]>([]);
   const [extensions, setExtensions] = useState<Extension[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<'ALL' | 'INTERNAL' | 'EXTERNAL'>('ALL');
@@ -102,19 +91,26 @@ const ContactsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async () => {
+    if (!domains_id) return;
     setLoading(true);
     try {
-      const url = filterType === 'ALL' ? '/api/contacts/' : `/api/contacts?contact_type=${filterType}`;
-      const [contactsData, extensionsData] = await Promise.all([
-        axios.get(`${API_URL}${url}`),
-        axios.get(`${API_URL}/api/extensions/domains`),
-      ]);
-      setContacts(contactsData.data || []);
-      setDomains(extensionsData.data || []);
-      // If a domain is already selected, refresh its extensions
-      if (formData.domain_id) {
-        await loadExtensionsByDomain(formData.domain_id);
+      const params = new URLSearchParams({ domain_id: domains_id });
+      if (filterType !== 'ALL') {
+        params.append('contact_type', filterType);
       }
+      
+      const contactsUrl = `${API_URL}/api/contacts/?${params.toString()}`;
+      const extensionsUrl = `${API_URL}/api/extensions/domain/${domains_id}`;
+
+      const [contactsData, extensionsData] = await Promise.all([
+        axios.get(contactsUrl),
+        axios.get(extensionsUrl),
+      ]);
+      console.log("Contacts Data:", contactsData);
+      console.log("Extensions Data:", extensionsData);
+      setContacts(contactsData.data || []);
+      setExtensions(extensionsData.data || []);
+
     } catch (error) {
       toast.error('Failed to load data.');
       console.error(error);
@@ -135,7 +131,7 @@ const ContactsPage = () => {
 
   useEffect(() => {
     fetchData();
-  }, [filterType]);
+  }, [filterType, domains_id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -195,11 +191,17 @@ const ContactsPage = () => {
         full_name: contact.full_name,
         phone_number: contact.phone_number || '',
         contact_type: contact.contact_type,
-        domain_id: contact.domain ? contact.domain.domain_id : '',
+        domain_id: contact.domain?.domain_id || '',
         extension_id: contact.extension_id || '',
       });
+      if (contact.domain?.domain_id) {
+        loadExtensionsByDomain(contact.domain.domain_id);
+      }
     } else {
-      setFormData(initialFormData);
+      setFormData({ ...initialFormData, domain_id: domains_id });
+      if (domains_id) {
+        loadExtensionsByDomain(domains_id);
+      }
     }
     setIsFormOpen(true);
   };
@@ -213,9 +215,11 @@ const ContactsPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    const finalFormData = { ...formData, domain_id: domains_id };
+    console.log("finalFormData", finalFormData);
     const promise = selectedContact
-      ? api.put(`/api/contacts/${selectedContact.contact_id}`, formData)
-      : api.post('/api/contacts', formData);
+      ? axios.put(`${API_URL}/api/contacts/${selectedContact.contact_id}`, finalFormData)
+      : axios.post(`${API_URL}/api/contacts/`, finalFormData);
 
     toast.promise(promise, {
       loading: `${selectedContact ? 'Updating' : 'Creating'} contact...`,
@@ -231,7 +235,7 @@ const ContactsPage = () => {
   const handleDelete = async () => {
     if (!selectedContact) return;
     
-    toast.promise(api.delete(`/api/contacts/${selectedContact.contact_id}`), {
+    toast.promise(axios.delete(`${API_URL}/api/contacts/${selectedContact.contact_id}`), {
       loading: 'Deleting contact...',
       success: () => {
         fetchData();
@@ -250,7 +254,13 @@ const ContactsPage = () => {
     return extensions.filter(ext => !linkedExtensionIds.has(ext.extension_id));
   }, [contacts, extensions, selectedContact]);
 
-  const filteredContacts = useMemo(() => contacts.filter(contact => contact.full_name.toLowerCase().includes(searchTerm.toLowerCase())), [contacts, searchTerm]);
+  const filteredContacts = useMemo(() => contacts.filter(contact => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      contact.full_name.toLowerCase().includes(searchLower) ||
+      (contact.phone_number && contact.phone_number.includes(searchTerm))
+    );
+  }), [contacts, searchTerm]);
 
   return (
     <motion.div
@@ -261,7 +271,7 @@ const ContactsPage = () => {
       <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
         <Card className="mb-6 shadow-md md:mx-0 mx-4">
           <CardHeader className="px-4 sm:px-6">
-            <CardTitle className="text-xl sm:text-2xl font-bold text-center">Contacts Management</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">Contacts Management in {domain_name}</CardTitle>
           </CardHeader>
           <CardContent className="px-4 sm:px-6">
             <div className="flex flex-row justify-between items-center gap-2 sm:gap-3">
@@ -399,20 +409,7 @@ const ContactsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {formData.contact_type === 'INTERNAL' && (
-                <div className="mb-4">
-                  <Label className="mb-2" htmlFor="domain_id">Domain</Label>
-                  <Select onValueChange={(value) => handleSelectChange('domain_id', value)} value={formData.domain_id}>
-                    <SelectTrigger><SelectValue placeholder="Select a domain" /></SelectTrigger>
-                    <SelectContent>
-                      {domains.map((d) => (
-                        <SelectItem key={d.domains_id} value={d.domains_id}>{d.domain_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formErrors.domain_id && <p className="text-red-500 text-sm mt-1">{formErrors.domain_id}</p>}
-                </div>
-              )}
+
 
               {formData.contact_type === 'INTERNAL' && formData.domain_id && (
                 <div>

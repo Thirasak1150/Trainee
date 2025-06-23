@@ -85,14 +85,7 @@ async def get_menu_by_role(role_id: str):
                                     "roles_id": role_id
                                 }
                             }
-                        },
-                        "order": [
-                            {"order_index": "asc"}
-                        ]
-                    },
-                    # //ต้องการให้ order by order_index
-                    "order": {
-                        "order_index": "asc"
+                        }
                     },
                     "role_menus": {
                         "where": {

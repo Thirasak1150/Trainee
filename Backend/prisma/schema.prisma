@@ -46,8 +46,9 @@ model domains {
   updated_by    String?  @db.Uuid                              // ผู้ใช้ที่แก้ไขล่าสุด
   
   extensions    extensions[]                                   // รายการ extension
-
-  // ความสัมพันธ์กับผู้ใช้แต่ละบทบาท
+  contacts      contacts[]                                     // รายการ contact
+  
+  groups        group_extensions[]                             // รายการกลุ่ม
   creator       users?  @relation("domainsCreated", fields: [created_by], references: [users_id], onDelete: SetNull)
   updater       users?  @relation("domainsUpdated", fields: [updated_by], references: [users_id], onDelete: SetNull)
   manager       users?  @relation("domainsManaged", fields: [manager_id], references: [users_id], onDelete: SetNull)
@@ -103,21 +104,21 @@ model role_menu_items {
 }
 
 model extensions {
-  extension_id      String   @id @default(uuid()) @db.Uuid  // รหัส extension (Primary Key)
-  domain_id         String   @db.Uuid                       // รหัส domain ที่ extension นี้อยู่ (Foreign Key)
-  user_id           String?  @db.Uuid                       // รหัสผู้ใช้ที่ใช้ extension นี้ (ไม่บังคับ)
-  extension_number  String                                   // หมายเลข extension เช่น 100, 101
-  voicemail_enabled Boolean  @default(false)                 // เปิด/ปิด voicemail
-  is_active         Boolean  @default(true)                  // สถานะ extension เปิด/ปิดใช้งาน
-  call_forwarding   String?                                   // เบอร์ปลายทางถ้า forward call
-  description       String?                                   // คำอธิบายเพิ่มเติม
-  created_at        DateTime @default(now())                 // วันที่สร้าง extension
-  updated_at        DateTime @default(now())                 // วันที่แก้ไขล่าสุด
-  contact           contacts?   @relation                     // ความสัมพันธ์กับ contact (หนึ่งต่อหนึ่ง)
-  
-  @@unique([domain_id, extension_number])                    // ห้ามมี extension_number ซ้ำกันภายใน domain เดียวกัน
+  extension_id      String   @id @default(uuid()) @db.Uuid      // รหัส extension
+  domain_id         String   @db.Uuid                           // รหัส domain
+  group_id          String?  @db.Uuid                           // ✅ รหัสกลุ่ม (nullable กรณียังไม่มีกลุ่ม)
+  user_id           String?  @db.Uuid
+  extension_number  String                                      // หมายเลข extension เช่น 100, 101
+  voicemail_enabled Boolean  @default(false)
+  is_active         Boolean  @default(true)
+  call_forwarding   String?
+  description       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
 
-  domain domains @relation(fields: [domain_id], references: [domains_id], onDelete: Cascade)  // ความสัมพันธ์กับ domain
+  domain            domains           @relation(fields: [domain_id], references: [domains_id], onDelete: Cascade)
+  group             group_extensions? @relation(fields: [group_id], references: [group_id], onDelete: SetNull) // ✅ ความสัมพันธ์กับ group_extensions
+  contact           contacts?         @relation
 }
 
 enum ContactType {
@@ -127,13 +128,27 @@ enum ContactType {
 
 model contacts {
   contact_id    String      @id @default(uuid()) @db.Uuid     // รหัส contact (Primary Key)
+  domain_id     String   @db.Uuid                           // รหัส domain
   full_name     String                                         // ชื่อเต็ม contact
   phone_number  String?                                        // เบอร์โทรศัพท์ (ไม่บังคับ)
   contact_type ContactType @default(EXTERNAL)                  // ประเภท contact: INTERNAL หรือ EXTERNAL
   extension_id  String?    @db.Uuid @unique                    // รหัส extension ที่ contact นี้ผูกกับ (ถ้ามี) ต้องไม่ซ้ำ (one-to-one)
   
   extension     extensions? @relation(fields: [extension_id], references: [extension_id], onDelete: SetNull) // ความสัมพันธ์กับ extension
-
+  domain            domains           @relation(fields: [domain_id], references: [domains_id], onDelete: Cascade)
   created_at    DateTime    @default(now())                    // วันที่สร้าง contact
   updated_at    DateTime    @default(now())                    // วันที่อัปเดต contact ล่าสุด
+}
+
+model group_extensions {
+  group_id     String   @id @default(uuid()) @db.Uuid          // รหัสกลุ่ม
+  domain_id    String   @db.Uuid                               // รหัส domain ที่กลุ่มนี้อยู่
+  name         String                                           // ชื่อกลุ่ม เช่น "IT", "Accounting"
+  description  String?                                          // คำอธิบายกลุ่ม
+  is_active    Boolean  @default(true)                          // เปิด/ปิดใช้งานกลุ่ม
+  created_at   DateTime @default(now())                         // วันที่สร้าง
+  updated_at   DateTime @default(now())                         // วันที่อัปเดตล่าสุด
+
+  domain       domains           @relation(fields: [domain_id], references: [domains_id], onDelete: Cascade)
+  extensions   extensions[]      // ✅ ความสัมพันธ์แบบ one-to-many: กลุ่มมีหลาย extension
 }

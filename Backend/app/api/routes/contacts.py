@@ -9,13 +9,13 @@ router = APIRouter()
 
 @router.get("/")
 async def read_contacts(
+    domain_id: str, 
     contact_type: Optional[str] = Query(None, enum=["INTERNAL", "EXTERNAL"])
 ):
     """
-    Retrieve all contacts, with an option to filter by contact_type (INTERNAL or EXTERNAL).
+    Retrieve all contacts, with an option to filter by domain_id and contact_type.
     """
-    print("contact_type", contact_type)
-    contacts = await contact_serivce.get_all_contacts(contact_type=contact_type)
+    contacts = await contact_serivce.get_all_contacts(domain_id=domain_id, contact_type=contact_type)
     return contacts
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
