@@ -248,35 +248,27 @@ const GroupExtensions = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    className="col-span-3"
                     placeholder="e.g., Sales Team"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Description
-                  </Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="description">Description</Label>
                   <Input
                     id="description"
                     value={newGroupDescription}
                     onChange={(e) => setNewGroupDescription(e.target.value)}
-                    className="col-span-3"
                     placeholder="Optional description"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label className="text-right pt-2">
-                    Extensions
-                  </Label>
-                  <div className="col-span-3 max-h-48 overflow-y-auto border p-2 rounded-md">
+                <div className="grid gap-2">
+                  <Label>Extensions</Label>
+                  <div className="max-h-48 overflow-y-auto border p-2 rounded-md">
                     {availableExtensions.length > 0 ? (
                       availableExtensions.map(ext => (
                         <div key={ext.extension_id} className="flex items-center space-x-2 mb-2">
@@ -306,52 +298,64 @@ const GroupExtensions = () => {
             </DialogContent>
           </Dialog>
         </CardHeader>
-        <CardContent> 
+        <CardContent>
           {loading ? (
-            <p>Loading...</p>
+            <div className="text-center py-8 text-gray-500">Loading...</div>
+          ) : groups.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No groups found.</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Group Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Extensions</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {groups.map((group) => (
-                  <TableRow key={group.group_id}>
-                    <TableCell className="font-medium">{group.name}</TableCell>
-                    <TableCell>{group.description || '-'}</TableCell>
-                    <TableCell>
-                    <div className="flex items-center gap-2">
-                                                    <span className={`h-3 w-3 rounded-full ${group.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                    <span>{group.is_active ? 'Active' : 'Inactive'}</span>
-                                                </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {group.extensions.map(ext => (
-                          <Badge key={ext.extension_id} variant="secondary">{ext.extension_number}</Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                                                <div className="flex gap-2 justify-end">
-                                                    <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openEditDialog(group)}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteDialog(group)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="hidden sm:table-header-group">
+                  <TableRow>
+                    <TableHead>Group Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Extensions</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {groups.map((group) => (
+                    <TableRow key={group.group_id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex flex-col sm:table-row py-3 sm:py-0">
+                      <TableCell className="font-medium sm:table-cell flex items-center gap-2">
+                        <span className="sm:hidden font-bold">Group Name:</span>
+                        {group.name}
+                      </TableCell>
+                      <TableCell className="sm:table-cell flex items-center gap-2">
+                        <span className="sm:hidden font-bold">Description:</span>
+                        {group.description || '-'}
+                      </TableCell>
+                      <TableCell className="sm:table-cell flex items-center gap-2">
+                        <span className="sm:hidden font-bold">Status:</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`h-3 w-3 rounded-full ${group.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          <span>{group.is_active ? 'Active' : 'Inactive'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="sm:table-cell">
+                        <span className="sm:hidden font-bold mb-2 flex">Extensions:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {group.extensions.map(ext => (
+                            <Badge key={ext.extension_id} variant="secondary">{ext.extension_number}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right sm:table-cell">
+                        <div className="flex gap-2 justify-end mt-2 sm:mt-0">
+                          <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openEditDialog(group)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteDialog(group)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -383,38 +387,33 @@ const GroupExtensions = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">Name</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Name</Label>
               <Input
                 id="edit-name"
                 value={editGroupName}
                 onChange={(e) => setEditGroupName(e.target.value)}
-                className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">Description</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description">Description</Label>
               <Input
                 id="edit-description"
                 value={editGroupDescription}
                 onChange={(e) => setEditGroupDescription(e.target.value)}
-                className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-status" className="text-right">Status</Label>
-              <div className="col-span-3 flex items-center space-x-2">
-                 <Switch
-                  id="edit-status"
-                  checked={editIsActive}
-                  onCheckedChange={setEditIsActive}
-                />
-                <Label htmlFor="edit-status">{editIsActive ? 'Active' : 'Inactive'}</Label>
-              </div>
+            <div className="flex items-center space-x-2 pt-2">
+               <Switch
+                id="edit-status"
+                checked={editIsActive}
+                onCheckedChange={setEditIsActive}
+              />
+              <Label htmlFor="edit-status" className="text-sm text-muted-foreground">{editIsActive ? 'Active' : 'Inactive'}</Label>
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">Extensions</Label>
-              <div className="col-span-3 max-h-48 overflow-y-auto border p-2 rounded-md">
+            <div className="grid gap-2">
+              <Label>Extensions</Label>
+              <div className="max-h-48 overflow-y-auto border p-2 rounded-md">
                 {extensionsForEdit.length > 0 ? (
                   extensionsForEdit.map(ext => (
                     <div key={ext.extension_id} className="flex items-center space-x-2 mb-2">

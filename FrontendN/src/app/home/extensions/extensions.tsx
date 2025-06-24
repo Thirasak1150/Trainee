@@ -285,8 +285,8 @@ const ExtensionsPage = () => {
         >
             <div className="    container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
                 <Card className='bg-background/80 backdrop-blur-sm border-border/40 shadow-lg'>
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
+                    <CardHeader >
+                        <div className="flex justify-between items-center   ">
                             <CardTitle>Extension Management</CardTitle>
                             {selectedDomain && (
                                 <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
@@ -388,7 +388,7 @@ const ExtensionsPage = () => {
                     </CardHeader>
                     <CardContent>
                         {/* Domain Selection Table */}
-                        <Card className="mb-6">
+                        <Card className="mb-6  ">
                             <CardHeader>
                                 <div className="flex justify-between items-center">
                                     <CardTitle className="text-lg">Select Domain</CardTitle>

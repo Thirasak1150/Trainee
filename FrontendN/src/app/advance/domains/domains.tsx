@@ -249,45 +249,45 @@ const DomainsPage = () => {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="name" className="text-right">Name</Label>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="name">Name</Label>
                                             <Input
                                                 id="name"
                                                 value={newDomain.domain_name}
                                                 onChange={(e) => setNewDomain({ ...newDomain, domain_name: e.target.value })}
-                                                className="col-span-3 bg-gray-700 border-gray-600"
+                                                className="bg-gray-700 border-gray-600"
                                             />
                                         </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="enable" className="text-right">Enable</Label>
+                                        <div className="flex items-center space-x-2 pt-2">
                                             <Switch
                                                 id="enable"
                                                 checked={newDomain.enable}
                                                 onCheckedChange={(checked) => setNewDomain({ ...newDomain, enable: checked })}
                                             />
+                                            <Label htmlFor="enable" className="text-sm text-muted-foreground">
+                                                {newDomain.enable ? 'Enabled' : 'Disabled'}
+                                            </Label>
                                         </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="manager" className="text-right">Manager</Label>
-                                            <Input
-                                                id="manager"
-                                                value={managerUsername}
-                                                onChange={(e) => setManagerUsername(e.target.value)}
-                                                className="col-span-2 bg-gray-700 border-gray-600"
-                                                placeholder="Enter username"
-                                            />
-                                            <Button type="button" onClick={handleCheckUser} className="col-span-1 bg-indigo-600 hover:bg-indigo-700 text-xs p-2 h-auto">
-                                                <UserCheck className="h-4 w-4 mr-1"/>
-                                                Check
-                                            </Button>
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4 -mt-2">
-                                            <div className="col-start-2 col-span-3">
-                                                {managerStatus.message && (
-                                                    <p className={`text-xs ${managerStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                                                        {managerStatus.message}
-                                                    </p>
-                                                )}
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="manager">Manager</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    id="manager"
+                                                    value={managerUsername}
+                                                    onChange={(e) => setManagerUsername(e.target.value)}
+                                                    className="bg-gray-700 border-gray-600 flex-grow"
+                                                    placeholder="Enter username"
+                                                />
+                                                <Button type="button" onClick={handleCheckUser} className="bg-indigo-600 hover:bg-indigo-700 text-xs p-2 h-auto shrink-0">
+                                                    <UserCheck className="h-4 w-4 mr-1"/>
+                                                    Check
+                                                </Button>
                                             </div>
+                                            {managerStatus.message && (
+                                                <p className={`text-xs mt-1 ${managerStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {managerStatus.message}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                     <DialogFooter>
@@ -307,56 +307,76 @@ const DomainsPage = () => {
                                 className="max-w-sm bg-gray-700 border-gray-600"
                             />
                         </div>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Domain Name</TableHead>
-                                    <TableHead>Manager</TableHead>
-                                    <TableHead>Creator</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {domains.map((domain) => (
-                                    <TableRow key={domain.domains_id}>
-                                        <TableCell>{domain.domain_name}</TableCell>
-                                        <TableCell>{domain.manager?.username || '-'}</TableCell>
-                                        <TableCell>{domain.creator?.username || '-'}</TableCell>
-                                        <TableCell>
+                        {domains.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader className="hidden sm:table-header-group">
+                                        <TableRow>
+                                            <TableHead>Domain Name</TableHead>
+                                            <TableHead>Manager</TableHead>
+                                            <TableHead>Creator</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {domains.map((domain) => (
+                                            <TableRow key={domain.domains_id} className="border-b transition-colors hover:bg-gray-800/50 data-[state=selected]:bg-gray-800 flex flex-col sm:table-row py-3 sm:py-0">
+                                                <TableCell className="font-medium sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Domain:</span>
+                                                    {domain.domain_name}
+                                                </TableCell>
+                                                <TableCell className="sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Manager:</span>
+                                                    {domain.manager?.username || '-'}
+                                                </TableCell>
+                                                <TableCell className="sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Creator:</span>
+                                                    {domain.creator?.username || '-'}
+                                                </TableCell>
+                                                <TableCell className="sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Status:</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className={`h-3 w-3 rounded-full ${domain.enable ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                                         <span>{domain.enable ? 'Enabled' : 'Disabled'}</span>
                                                     </div>
                                                 </TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => handleOpenEditDialog(domain)}>
-                                                <PenBox className="h-4 w-4" />
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="destructive" size="icon">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete the domain <span className='font-bold'>{`"${domain.domain_name}"`}</span>.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDeleteDomain(domain.domains_id)}>Continue</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                                <TableCell className="sm:table-cell text-right">
+                                                    <div className="flex gap-2 justify-end mt-2 sm:mt-0">
+                                                        <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => handleOpenEditDialog(domain)}>
+                                                            <PenBox className="h-4 w-4" />
+                                                        </Button>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="destructive" size="icon">
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This action cannot be undone. This will permanently delete the domain <span className='font-bold'>{`"${domain.domain_name}"`}</span>.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDeleteDomain(domain.domains_id)}>Continue</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-gray-400">
+                                No domains found.
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </motion.div>

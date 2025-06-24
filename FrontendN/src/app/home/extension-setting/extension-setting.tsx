@@ -231,7 +231,7 @@ const ExtensionSetting = () => {
             transition={{ duration: 0.5 }}
         >
             <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
-                <Card className='bg-background/80 backdrop-blur-sm border-border/40 shadow-lg'>
+                <Card className=' border-border/40 shadow-lg'>
                     <CardHeader>
                         <div className="flex justify-between items-center">
                             <CardTitle>Extensions for {domain_name == null || domain_name == undefined || domain_name == ''  ? '...': domain_name}</CardTitle>
@@ -324,78 +324,84 @@ const ExtensionSetting = () => {
                     </CardHeader>
                     <CardContent>
                         {loading ? (
-                            <p>Loading extensions...</p>
+                            <div className="text-center py-8 text-gray-500">Loading extensions...</div>
                         ) : domains_id && extensions.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Extension</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {extensions.map(ext => (
-                                        <TableRow key={ext.extension_id}>
-                                            <TableCell>{ext.extension_number}</TableCell>
-                                            <TableCell>{ext.description || '-'}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`h-3 w-3 rounded-full ${ext.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                    <span>{ext.is_active ? 'Active' : 'Inactive'}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex gap-2 justify-end">
-                                                    <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openEditDialog(ext)}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteDialog(ext)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader className="hidden sm:table-header-group">
+                                        <TableRow>
+                                            <TableHead>Extension</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {extensions.map(ext => (
+                                            <TableRow key={ext.extension_id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex flex-col sm:table-row py-3 sm:py-0">
+                                                <TableCell className="font-medium sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Extension:</span>
+                                                    {ext.extension_number}
+                                                </TableCell>
+                                                <TableCell className="sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Description:</span>
+                                                    {ext.description || '-'}
+                                                </TableCell>
+                                                <TableCell className="sm:table-cell flex items-center gap-2">
+                                                    <span className="sm:hidden font-bold">Status:</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`h-3 w-3 rounded-full ${ext.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                        <span>{ext.is_active ? 'Active' : 'Inactive'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right sm:table-cell">
+                                                    <div className="flex gap-2 justify-end mt-2 sm:mt-0">
+                                                        <Button variant="default" size="icon" className="hover:text-yellow-400" onClick={() => openEditDialog(ext)}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button variant="destructive" size="icon" className="text-red-500 hover:text-red-700" onClick={() => openDeleteDialog(ext)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         ) : domains_id ? (
-                            <p>No extensions found for this domain.</p>
+                            <div className="text-center py-8 text-gray-500">No extensions found for this domain.</div>
                         ) : (
-                            <p>Please select a domain from the main dashboard to see the extensions.</p>
+                            <div className="text-center py-8 text-gray-500">Please select a domain from the main dashboard to see the extensions.</div>
                         )}
                     </CardContent>
                 </Card>
 
                 {/* Edit Dialog */}
                 <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                             <DialogTitle>Edit Extension</DialogTitle>
                         </DialogHeader>
                         {currentExtension && (
                             <div className="grid gap-4 py-4">
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="edit-extension_number" className="text-right">Extension</Label>
-                                    <Input id="edit-extension_number" value={currentExtension.extension_number} onChange={(e) => setCurrentExtension({ ...currentExtension, extension_number: e.target.value })} className="col-span-3" />
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-extension_number">Extension</Label>
+                                    <Input id="edit-extension_number" value={currentExtension.extension_number} onChange={(e) => setCurrentExtension({ ...currentExtension, extension_number: e.target.value })} />
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="edit-description" className="text-right">Description</Label>
-                                    <Input id="edit-description" value={currentExtension.description || ''} onChange={(e) => setCurrentExtension({ ...currentExtension, description: e.target.value })} className="col-span-3" />
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-description">Description</Label>
+                                    <Input id="edit-description" value={currentExtension.description || ''} onChange={(e) => setCurrentExtension({ ...currentExtension, description: e.target.value })} />
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="edit-status" className="text-right">Status</Label>
-                                    <div className="flex items-center space-x-2 col-span-3">
-                                        <Switch 
-                                            id="edit-status"
-                                            checked={currentExtension.is_active}
-                                            onCheckedChange={(checked) => setCurrentExtension({ ...currentExtension, is_active: checked })}
-                                        />
-                                        <Label htmlFor="edit-status" className="text-sm text-muted-foreground">
-                                            {currentExtension.is_active ? 'Active' : 'Inactive'}
-                                        </Label>
-                                    </div>
+                                <div className="flex items-center space-x-2 pt-2">
+                                    <Switch 
+                                        id="edit-status"
+                                        checked={currentExtension.is_active}
+                                        onCheckedChange={(checked) => setCurrentExtension({ ...currentExtension, is_active: checked })}
+                                    />
+                                    <Label htmlFor="edit-status" className="text-sm text-muted-foreground">
+                                        {currentExtension.is_active ? 'Active' : 'Inactive'}
+                                    </Label>
                                 </div>
                             </div>
                         )}
