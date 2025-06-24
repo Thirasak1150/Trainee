@@ -30,7 +30,7 @@ interface ExtensionError {
 
 const ExtensionSetting = () => {
     const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
-    const user_id = useSelector((state: any) => state.user.user_id);
+    // const user_id = useSelector((state: any) => state.user.user_id);
     const domains_id = useSelector((state: any) => state.user.domains_id);
     console.log("Domains ID2222:", domains_id);
     const domain_name = useSelector((state: any) => state.user.domain_name);
