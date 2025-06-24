@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Account } from '../types/Formdata';
 import { toast } from 'sonner';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.1.126:8000';
 
 export const deleteAccount = async (deletingAccount: Account, fetchData: () => void,setDeletingAccount: (deletingAccount: Account | null) => void) => {
     if (!deletingAccount) return

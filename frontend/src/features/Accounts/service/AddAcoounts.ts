@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { FormData } from '../types/Formdata';
 import { toast } from 'sonner';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.1.126:8000';
 
 export const addAcount = async (addFormData: FormData, setOpenDialog: (open: boolean) => void, fetchData: () => void,setAddFormData: (formData: FormData) => void) => {
     try {
