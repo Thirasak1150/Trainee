@@ -66,6 +66,7 @@ VALUES
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Extensions', '/home/extensions', 3, 'extensions'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Extension Setting', '/home/extension-setting', 4, 'extension-setting'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Group Extensions', '/home/group-extensions', 5, 'group-extensions'),
+  (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Home'), 'Trunks', '/home/trunks', 6, 'trunks'),
   -- Advance
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Access Controls', '/advance/access-controls', 1, 'access-controls'),
   (gen_random_uuid(), (SELECT menu_headers_id FROM menu_headers WHERE name_default = 'Advance'), 'Domains', '/advance/domains', 2, 'domains'),
@@ -201,6 +202,99 @@ SET
   updated_at = now()
 WHERE domain_name = 'companyA.com';
 
+-- ================================
+-- ✅ 13. เพิ่มข้อมูล Trunks
+-- ================================
+INSERT INTO trunks (
+  trunk_id,
+  domain_id,
+  name,
+  transport,
+  host,
+  port,
+  username,
+  auth_username,
+  password,
+  register_trunk,
+  trunk_type,
+  is_active,
+  description,
+  created_at,
+  updated_at
+)
+VALUES
+  -- SIP Trunk สำหรับ TOT
+  (
+    gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
+    'TOT SIP Trunk',
+    'UDP',
+    'sip.tot.co.th',
+    5060,
+    '0812345678',
+    '0812345678',
+    'tot1234',
+    true,
+    'Register',
+    true,
+    'TOT SIP Trunk สำหรับโทรออกนอก',
+    now(),
+    now()
+  ),
+  -- GSM Gateway
+  (
+    gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
+    'GSM Gateway 1',
+    'TCP',
+    '192.168.1.100',
+    5060,
+    'admin',
+    'admin',
+    'gsm1234',
+    false,
+    'PEER',
+    true,
+    'GSM Gateway สำหรับโทรออกมือถือ',
+    now(),
+    now()
+  ),
+  -- Trunk สำหรับ Company B
+  (
+    gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyB.com'),
+    'Company B Main Trunk',
+    'TLS',
+    'sip.companyb.com',
+    5061,
+    'companyb',
+    'companyb',
+    'securepass123',
+    true,
+    'Register',
+    true,
+    'Main SIP Trunk for Company B',
+    now(),
+    now()
+  ),
+  -- WebRTC Trunk
+  (
+    gen_random_uuid(),
+    (SELECT domains_id FROM domains WHERE domain_name = 'companyA.com'),
+    'WebRTC Gateway',
+    'WSS',
+    'webrtc.example.com',
+    7443,
+    'webrtc',
+    'webrtc',
+    'webrtcpass',
+    true,
+    'WEBRTC',
+    true,
+    'WebRTC Gateway สำหรับการเชื่อมต่อผ่าน Browser',
+    now(),
+    now()
+  );
 -- ================================
 -- 🎉 เสร็จสมบูรณ์!
 -- ================================

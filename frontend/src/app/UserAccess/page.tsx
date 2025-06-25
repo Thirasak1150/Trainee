@@ -71,7 +71,7 @@ export default function UserAccessPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://192.168.1.126:8000/api/users");
+      const response = await axios.get("http://localhost:8000/api/users");
       console.log("response",response)
       setAllUsers(response.data);
       setUsers(response.data);
@@ -114,7 +114,7 @@ export default function UserAccessPage() {
         description: newUser.user_description
       };
       
-      const response = await axios.post("http://192.168.1.126:8000/api/users", userData);
+      const response = await axios.post("http://localhost:8000/api/users", userData);
       console.log("response", response);
       setUsers([...users, response.data]);
       setNewUser({ 
@@ -136,7 +136,7 @@ export default function UserAccessPage() {
     e.preventDefault();
     if (!editingUser) return;
     try {
-      const response = await axios.put(`http://192.168.1.126:8000/api/users/${editingUser.user_uuid}`, {
+      const response = await axios.put(`http://localhost:8000/api/users/${editingUser.user_uuid}`, {
         username: editingUser.username,
         email: editingUser.user_email,
         user_enabled: editingUser.user_enabled,
@@ -155,7 +155,7 @@ export default function UserAccessPage() {
 
   const handleDeleteUser = async (user_uuid: string) => {
     try {
-      await axios.delete(`http://192.168.1.126:8000/api/users/${user_uuid}`);
+      await axios.delete(`http://localhost:8000/api/users/${user_uuid}`);
       setUsers(users.filter(user => user.user_uuid !== user_uuid));
       toast.success("User deleted successfully");
     } catch (err) {

@@ -4,9 +4,10 @@ services:
     container_name: Trainee-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: StrongP@ssw0rd123!
-      POSTGRES_DB: TecnimicPBX
+      POSTGRES_PASSWORD: Plankton273855
+      POSTGRES_DB: TecnomicPBX
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+      TZ: Asia/Bangkok
     ports:
       - "5432:5432"
     volumes:
@@ -22,7 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: Trainee-backend
     environment:
-      - DATABASE_URL=postgresql://postgres:StrongP@ssw0rd123!@postgres:5432/TecnimicPBX
+      - DATABASE_URL=postgresql://postgres:Plankton273855@postgres:5432/TecnomicPBX
       - JWT_SECRET=your_secret_key_here
       - JWT_ALGORITHM=HS256
       - JWT_EXPIRATION=60
@@ -40,9 +41,9 @@ services:
     image: postgres:15
     depends_on:
       - postgres
-    entrypoint: ["psql", "-h", "postgres", "-U", "postgres", "-d", "TecnimicPBX", "-f", "/docker-entrypoint-initdb.d/01-init.sql"]
+    entrypoint: ["psql", "-h", "postgres", "-U", "postgres", "-d", "TecnomicPBX", "-f", "/docker-entrypoint-initdb.d/01-init.sql"]
     environment:
-      PGPASSWORD: StrongP@ssw0rd123!
+      PGPASSWORD: Plankton273855
     volumes:
       - ./CreateDataforDatabase.SQL:/docker-entrypoint-initdb.d/01-init.sql
     networks:

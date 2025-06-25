@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { profileData, ResponseUpdateProfileData, updateProfileData } from '../types/Profile.type';
 import { toast } from 'sonner';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.1.126:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 
 export const updateUserProfile = async (user_uuid: string, formData: profileData, setInitialData: (data: profileData) => void, setFormData: (data: profileData) => void) => {

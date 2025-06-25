@@ -230,7 +230,7 @@ const ExtensionSetting = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-7xl">
+            <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-6xl">
                 <Card className=' border-border/40 shadow-lg'>
                     <CardHeader>
                         <div className="flex justify-between items-center">

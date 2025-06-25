@@ -9,6 +9,7 @@ from app.api.routes import roles
 from app.api.routes import extensions
 from app.api.routes import contacts
 from app.api.routes import group_extensions
+from app.api.routes import trunk
 from psycopg2.extras import RealDictCursor
 from typing import Optional, List
 import uuid  # For generating user_uuid
@@ -43,6 +44,7 @@ app.include_router(roles.router, prefix="/api/roles", tags=["Roles"])
 app.include_router(extensions.router, prefix="/api", tags=["Extensions"])
 app.include_router(contacts.router, prefix="/api/contacts", tags=["Contacts"])
 app.include_router(group_extensions.router, prefix="/api/group-extensions", tags=["Group Extensions"])
+app.include_router(trunk.router,prefix="/api/trunk",tags=["Trunk"])
 @app.on_event("startup")
 async def startup():
     await prisma.connect()

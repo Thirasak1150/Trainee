@@ -23,6 +23,7 @@ import { Provider } from 'react-redux';
 import { store } from './Store/store';
 import ExtensionSetting from './app/home/extension-setting/extension-setting';
 import GroupExtensions from './app/home/group-extensions/group-extensions';
+import Trunk from './app/home/trunk/trunk';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -72,6 +73,13 @@ const router = createBrowserRouter([
         <GroupExtensions />
       </ClientLayoutWrapper>
     ),
+  },
+  {path:"/home/trunks",
+    element:(
+      <ClientLayoutWrapper>
+        <Trunk/>
+      </ClientLayoutWrapper>
+    )
   },
   //advacne
   {

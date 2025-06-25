@@ -26,7 +26,7 @@ const App = () => {
    const result = await handleLogin(username, password, setError, dispatch);
    if (result) {
     console.log('Login successful');
-    navigate('/home/accounts');
+    navigate('/home/account-setting');
     } 
     } catch (error) {
       console.error('Login failed:', error);

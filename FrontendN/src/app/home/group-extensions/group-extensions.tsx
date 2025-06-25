@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { motion } from 'framer-motion';
 
 interface Extension {
   extension_id: string;
@@ -230,7 +231,12 @@ const GroupExtensions = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+    className="container mx-auto p-4">
+      <div className="container mx-auto py-6 px-2 sm:px-4 lg:px-6 max-w-full sm:max-w-6xl">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Group Extensions</CardTitle>
@@ -439,7 +445,8 @@ const GroupExtensions = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
