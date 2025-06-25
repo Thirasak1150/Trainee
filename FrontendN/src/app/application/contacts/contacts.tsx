@@ -43,7 +43,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useSelector } from 'react-redux';
 
-// const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = 'http://192.168.1.126:8000';
 
 // Type definitions
 interface Contact {
